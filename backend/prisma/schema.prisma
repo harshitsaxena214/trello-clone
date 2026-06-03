@@ -30,6 +30,11 @@ model User {
   name         String
   email        String               @unique
   password     String
+  isAccountVerified  Boolean   @default(false)
+  verifyOtp          String?
+  verifyOtpExpiresAt DateTime?
+  resetOtp           String?
+  resetOtpExpiresAt  DateTime?
 
   createdAt    DateTime             @default(now())
   updatedAt    DateTime             @updatedAt
