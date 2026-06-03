@@ -1,4 +1,4 @@
-import express, { Request, Response } from "express";
+import express from "express";
 
 import { validate } from "../../middlewares/validate";
 import { authMiddleware } from "../../middlewares/authMiddelware";
