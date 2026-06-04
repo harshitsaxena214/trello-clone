@@ -13,6 +13,7 @@ const envSchema = z.object({
   SMTP_PORT: z.string(),
   SMTP_USER: z.string(),
   SMTP_PASS: z.string(),
+  CLIENT_URL: z.string().url(),
 });
 
 const parsedEnv = envSchema.safeParse(process.env);

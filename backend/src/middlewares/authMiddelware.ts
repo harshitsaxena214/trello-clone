@@ -1,6 +1,7 @@
 import { Request, Response, NextFunction } from "express";
 import jwt from "jsonwebtoken";
 import { env } from "../lib/env";
+import prisma from "../lib/db";
 
 declare global {
   namespace Express {
@@ -34,4 +35,18 @@ export const authMiddleware = (
     }
     return res.status(401).json({ success: false, message: "Invalid token" });
   }
+};
+
+export const verifiedMiddleware = async (
+  req: Request,
+  res: Response,
+  next: NextFunction,
+) => {
+  const user = await prisma.user.findUnique({ where: { id: req.user.id } });
+  if (!user?.isAccountVerified) {
+    return res
+      .status(403)
+      .json({ success: false, message: "Please verify your account" });
+  }
+  next();
 };
