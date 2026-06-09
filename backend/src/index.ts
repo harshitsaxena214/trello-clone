@@ -1,5 +1,6 @@
 import express from "express";
 import cookieParser from "cookie-parser";
+import cors from "cors";
 import authRouter from "./modules/auth/auth.routes";
 import userRouter from "./modules/user/user.routes";
 import organisationRouter from "./modules/organisation/organisation.routes";
@@ -7,6 +8,12 @@ import boardRouter from "./modules/board/board.routes";
 import issueRouter from "./modules/isuue/issue.routes";
 
 const app = express();
+app.use(
+  cors({
+    origin: "http://localhost:3000",
+    credentials: true,
+  })
+);
 app.use(express.json());
 app.use(cookieParser());
 

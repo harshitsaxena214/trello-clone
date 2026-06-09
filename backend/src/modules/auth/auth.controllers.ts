@@ -188,6 +188,8 @@ export const isAuthenticated = async (req: Request, res: Response) => {
       success: true,
       isAuthenticated: true,
       isAccountVerified: user.isAccountVerified,
+      name: user.name,
+      email: user.email,
     });
   } catch (error: any) {
     return res.status(500).json({

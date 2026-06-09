@@ -61,6 +61,35 @@ export const createOrganisation = async (req: Request, res: Response) => {
   }
 };
 
+export const getOrganisations = async (req: Request, res: Response) => {
+  try {
+    const userId = req.user.id;
+
+    const organisations = await prisma.organization.findMany({
+      where: {
+        members: {
+          some: {
+            userId,
+          },
+        },
+      },
+    });
+
+    return res.status(200).json({
+      success: true,
+      organisations,
+      message: "Organisations fetched Successfully",
+    });
+  } catch (error) {
+    console.error(error);
+
+    return res.status(500).json({
+      success: false,
+      message: "Failed to fetch organisations",
+    });
+  }
+};
+
 // GET /organisations/:id
 export const getOrganisation = async (req: Request, res: Response) => {
   const { id } = req.params as { id: string };

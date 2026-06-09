@@ -1,9 +1,87 @@
-import React from 'react'
+"use client";
 
-const page = () => {
+import { useState } from "react";
+import { useRouter } from "next/navigation";
+import { toast } from "sonner";
+
+import { api } from "@/lib/axios";
+
+import { Button } from "@/components/ui/button";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import {
+  InputOTP,
+  InputOTPGroup,
+  InputOTPSlot,
+} from "@/components/ui/input-otp";
+
+export default function VerifyPage() {
+  const router = useRouter();
+  const [otp, setOtp] = useState("");
+  const [loading, setLoading] = useState(false);
+
+  async function handleVerify() {
+    try {
+      setLoading(true);
+      const { data } = await api.post("/auth/verify-email", { otp });
+      toast.success(data.message);
+      router.push("/onboarding");
+    } catch (error: any) {
+      toast.error(error?.response?.data?.message ?? "Verification failed");
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  async function handleResend() {
+    try {
+      const { data } = await api.post("/auth/resend-otp");
+      toast.success(data.message);
+    } catch (error: any) {
+      toast.error(error?.response?.data?.message || "Failed to resend OTP");
+    }
+  }
+
   return (
-    <div>page</div>
-  )
-}
+    <div className="flex min-h-screen items-center justify-center">
+      <Card className="w-full max-w-md">
+        <CardHeader>
+          <CardTitle>Verify Your Account</CardTitle>
+          <CardDescription>
+            Enter The OTP sent to you mail to verify
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          <div>
+            <InputOTP maxLength={6} value={otp} onChange={setOtp}>
+              <InputOTPGroup>
+                <InputOTPSlot index={0} />
+                <InputOTPSlot index={1} />
+                <InputOTPSlot index={2} />
+                <InputOTPSlot index={3} />
+                <InputOTPSlot index={4} />
+                <InputOTPSlot index={5} />
+              </InputOTPGroup>
+            </InputOTP>
+          </div>
+        </CardContent>
+        <Button
+          onClick={handleVerify}
+          className="w-full"
+          disabled={loading || otp.length !== 6}
+        >
+          {loading ? "Verifying..." : "Verify Email"}
+        </Button>
 
-export default page
+        <Button variant="outline" className="w-full" onClick={handleResend}>
+          Resend OTP
+        </Button>
+      </Card>
+    </div>
+  );
+}

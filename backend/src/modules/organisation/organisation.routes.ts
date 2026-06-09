@@ -12,6 +12,7 @@ import {
   getInviteLink,
   getMembers,
   getOrganisation,
+  getOrganisations,
   joinOrganisation,
   leaveOrganisation,
   removeMember,
@@ -33,6 +34,7 @@ router.post(
   validate(createOrganisationSchema),
   createOrganisation,
 );
+router.get("/", authMiddleware, verifiedMiddleware, getOrganisations)
 router.get("/:id", authMiddleware, verifiedMiddleware, getOrganisation);
 router.put(
   "/:id",

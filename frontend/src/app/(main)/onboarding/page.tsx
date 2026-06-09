@@ -25,12 +25,11 @@ export default function OnboardingPage() {
   async function handleCreateOrg() {
     try {
       setLoading(true);
-
-      const { data } = await api.post("/organizations", {
+      const { data } = await api.post("/org", {
         name,
       });
 
-      router.push(`/org/${data.slug}`);
+      router.push(`/org/${data.data.slug}`);
     } catch (error) {
       console.error(error);
     } finally {
@@ -43,9 +42,7 @@ export default function OnboardingPage() {
       <Card className="w-full max-w-md">
         <CardHeader>
           <CardTitle>Create Organization</CardTitle>
-          <CardDescription>
-            Create your first workspace.
-          </CardDescription>
+          <CardDescription>Create your first workspace.</CardDescription>
         </CardHeader>
 
         <CardContent className="space-y-4">
