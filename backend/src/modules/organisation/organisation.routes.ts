@@ -13,6 +13,7 @@ import {
   getMembers,
   getOrganisation,
   getOrganisations,
+  getOrgByInviteCode,
   getOrgBySlug,
   joinOrganisation,
   leaveOrganisation,
@@ -37,6 +38,7 @@ router.post(
 );
 router.get("/", authMiddleware, verifiedMiddleware, getOrganisations);
 router.get("/slug/:slug", authMiddleware, verifiedMiddleware, getOrgBySlug);
+router.get("/invite/:inviteCode", authMiddleware, getOrgByInviteCode);
 router.post(
   "/join/:inviteCode",
   authMiddleware,

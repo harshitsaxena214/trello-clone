@@ -632,17 +632,68 @@ export const resetInviteLink = async (req: Request, res: Response) => {
 
 export const getOrgBySlug = async (req: Request, res: Response) => {
   const { slug } = req.params as { slug: string };
+  const userId = req.user.id;
 
   try {
     const org = await prisma.organization.findUnique({
       where: { slug },
-      select: { id: true, name: true, slug: true },
+      select: {
+        id: true,
+        name: true,
+        slug: true,
+        members: {
+          where: { userId },
+          select: { role: true },
+        },
+      },
     });
 
     if (!org) {
       return res
         .status(404)
         .json({ success: false, message: "Organisation not found" });
+    }
+    if (org.members.length === 0) {
+      return res
+        .status(403)
+        .json({
+          success: false,
+          message: "You are not a member of this organisation",
+        });
+    }
+
+    return res.status(200).json({
+      success: true,
+      data: {
+        id: org.id,
+        name: org.name,
+        slug: org.slug,
+        role: org.members[0]?.role ?? null,
+      },
+    });
+  } catch (error: any) {
+    return res.status(500).json({ success: false, message: error.message });
+  }
+};
+
+export const getOrgByInviteCode = async (req: Request, res: Response) => {
+  const { inviteCode } = req.params as { inviteCode: string };
+
+  try {
+    const org = await prisma.organization.findUnique({
+      where: { inviteCode },
+      select: {
+        id: true,
+        name: true,
+        slug: true,
+        _count: { select: { members: true, boards: true } },
+      },
+    });
+
+    if (!org) {
+      return res
+        .status(404)
+        .json({ success: false, message: "Invalid or expired invite link" });
     }
 
     return res.status(200).json({ success: true, data: org });
