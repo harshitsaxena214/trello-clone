@@ -6,13 +6,15 @@ import userRouter from "./modules/user/user.routes";
 import organisationRouter from "./modules/organisation/organisation.routes";
 import boardRouter from "./modules/board/board.routes";
 import issueRouter from "./modules/isuue/issue.routes";
+import { env } from "./lib/env";
 
 const app = express();
+
 app.use(
   cors({
-    origin: "http://localhost:3000",
+    origin: env.ALLOWED_ORIGINS,
     credentials: true,
-  })
+  }),
 );
 app.use(express.json());
 app.use(cookieParser());
