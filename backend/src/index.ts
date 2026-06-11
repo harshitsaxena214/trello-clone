@@ -19,7 +19,7 @@ app.use(
 app.use(express.json());
 app.use(cookieParser());
 
-const port = process.env.PORT ?? 8000;
+const port = env.PORT ?? 8000;
 
 app.get("/", (req, res) => {
   res.send("Server is live");
