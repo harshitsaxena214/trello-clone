@@ -11,7 +11,7 @@ export default function OrgLayout({ children }: { children: React.ReactNode }) {
     <SidebarProvider>
       <OrganizationSidebar />
       <SidebarInset>
-        <header className="flex h-14 items-center border-b px-4">
+        <header className="flex h-14 items-center border-b">
           <SidebarTrigger />
         </header>
         <div className="flex-1">{children}</div>

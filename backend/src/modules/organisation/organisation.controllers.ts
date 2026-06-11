@@ -629,3 +629,24 @@ export const resetInviteLink = async (req: Request, res: Response) => {
     return res.status(500).json({ success: false, message: error.message });
   }
 };
+
+export const getOrgBySlug = async (req: Request, res: Response) => {
+  const { slug } = req.params as { slug: string };
+
+  try {
+    const org = await prisma.organization.findUnique({
+      where: { slug },
+      select: { id: true, name: true, slug: true },
+    });
+
+    if (!org) {
+      return res
+        .status(404)
+        .json({ success: false, message: "Organisation not found" });
+    }
+
+    return res.status(200).json({ success: true, data: org });
+  } catch (error: any) {
+    return res.status(500).json({ success: false, message: error.message });
+  }
+};

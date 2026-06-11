@@ -1,6 +1,5 @@
 import { Request, Response } from "express";
 import prisma from "../../lib/db";
-import { success } from "zod";
 
 // POST /organisations/:orgId/boards/:boardId/issues
 export const createIssue = async (req: Request, res: Response) => {

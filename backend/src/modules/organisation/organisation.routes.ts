@@ -13,6 +13,7 @@ import {
   getMembers,
   getOrganisation,
   getOrganisations,
+  getOrgBySlug,
   joinOrganisation,
   leaveOrganisation,
   removeMember,
@@ -34,7 +35,14 @@ router.post(
   validate(createOrganisationSchema),
   createOrganisation,
 );
-router.get("/", authMiddleware, verifiedMiddleware, getOrganisations)
+router.get("/", authMiddleware, verifiedMiddleware, getOrganisations);
+router.get("/slug/:slug", authMiddleware, verifiedMiddleware, getOrgBySlug);
+router.post(
+  "/join/:inviteCode",
+  authMiddleware,
+  verifiedMiddleware,
+  joinOrganisation,
+);
 router.get("/:id", authMiddleware, verifiedMiddleware, getOrganisation);
 router.put(
   "/:id",
@@ -71,12 +79,6 @@ router.post(
   verifiedMiddleware,
   validate(sendInviteSchema),
   sendInviteLink,
-);
-router.post(
-  "/join/:inviteCode",
-  authMiddleware,
-  verifiedMiddleware,
-  joinOrganisation,
 );
 router.patch(
   "/:id/reset-invite",

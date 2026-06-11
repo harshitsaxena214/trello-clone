@@ -50,7 +50,7 @@ export const getBoardByIdSchema = z.object({
 
 export const deleteBoardSchema = z.object({
   params: z.object({
-    orgId: z
+    orgIdzz: z
       .string("Organisation ID is required")
       .cuid("Invalid organisation ID"),
     boardId: z.string("Board ID is required").cuid("Invalid board ID"),

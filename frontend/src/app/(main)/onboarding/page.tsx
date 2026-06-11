@@ -28,7 +28,6 @@ export default function OnboardingPage() {
       const { data } = await api.post("/org", {
         name,
       });
-
       router.push(`/org/${data.data.slug}`);
     } catch (error) {
       console.error(error);
