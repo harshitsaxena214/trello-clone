@@ -32,6 +32,10 @@ app.use("/api/v1/org", organisationRouter);
 app.use("/api/v1/org/:orgId/board", boardRouter);
 app.use("/api/v1/org/:orgId/board/:boardId/issue", issueRouter);
 
-if (env.NODE_ENV !== "production") {
-  app.listen(port, () => console.log(`Server running on port ${port}`));
+if (env.NODE_ENV === "production") {
+  console.log("Running in production");
 }
+
+app.listen(port, () => {
+  console.log(`Server running on port ${port}`);
+});
