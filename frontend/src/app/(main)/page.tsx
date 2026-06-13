@@ -1,7 +1,14 @@
+"use client";
+
+import { useAuthGuard } from "@/hooks/useAuthGuard";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 
 export default function LandingPage() {
+  const { checking } = useAuthGuard({ isRoot: true });
+
+  if (checking) return null;
+
   return (
     <div className="min-h-screen flex flex-col items-center justify-center gap-8">
       <div className="text-center space-y-3">

@@ -32,7 +32,17 @@ export default function VerifyPage() {
       const params = new URLSearchParams(window.location.search);
       const returnUrl = params.get("returnUrl");
 
-      router.push(returnUrl ? decodeURIComponent(returnUrl) : "/onboarding");
+      if (returnUrl) {
+        // came from join flow — go back to join page
+        router.push(decodeURIComponent(returnUrl));
+        return;
+      }
+
+      // normal sign-up flow — check if they already have orgs
+      // (edge case: user verified but already joined an org somehow)
+      const orgsRes = await api.get("/org", { withCredentials: true });
+      const orgs = orgsRes.data.data ?? [];
+      router.push(orgs.length === 0 ? "/onboarding" : `/org/${orgs[0].slug}`);
     } catch (error: any) {
       toast.error(error?.response?.data?.message ?? "Verification failed");
     } finally {
@@ -45,7 +55,7 @@ export default function VerifyPage() {
       const { data } = await api.post("/auth/resend-otp");
       toast.success(data.message);
     } catch (error: any) {
-      toast.error(error?.response?.data?.message || "Failed to resend OTP");
+      toast.error(error?.response?.data?.message ?? "Failed to resend OTP");
     }
   }
 

@@ -15,21 +15,15 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import Link from "next/link";
+import { useAuthGuard } from "@/hooks/useAuthGuard";
 
 export default function SignInPage() {
   const router = useRouter();
+  const { checking } = useAuthGuard({ requireNoAuth: true });
   const [loading, setLoading] = useState(false);
   const [form, setForm] = useState({ email: "", password: "" });
 
-  useEffect(() => {
-    api
-      .get("/org", { withCredentials: true })
-      .then((res) => {
-        const orgs = res.data.data ?? [];
-        router.replace(orgs.length === 0 ? "/onboarding" : `/org/${orgs[0].slug}`);
-      })
-      .catch(() => {});
-  }, []);
+  if (checking) return null;
 
   async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
