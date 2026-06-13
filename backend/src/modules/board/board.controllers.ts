@@ -57,10 +57,27 @@ export const getBoards = async (req: Request, res: Response) => {
     const boards = await prisma.board.findMany({
       where: { organizationId: orgId },
       orderBy: { createdAt: "asc" },
-      include: { _count: { select: { issues: true } } },
+      include: {
+        _count: { select: { issues: true } },
+        issues: { select: { status: true } },
+      },
     });
 
-    return res.status(200).json({ success: true, data: boards });
+    const data = boards.map((board) => {
+      const total = board.issues.length;
+      const done = board.issues.filter((i) => i.status === "DONE").length;
+      const progress = total === 0 ? 0 : Math.round((done / total) * 100);
+
+      return {
+        id: board.id,
+        name: board.name,
+        createdAt: board.createdAt,
+        _count: board._count,
+        progress,
+      };
+    });
+
+    return res.status(200).json({ success: true, data });
   } catch (error) {
     return res
       .status(500)

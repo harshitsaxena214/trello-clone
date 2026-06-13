@@ -1,4 +1,3 @@
-// components/InviteMemberModal.tsx
 "use client";
 
 import { useEffect, useState } from "react";
@@ -22,24 +21,43 @@ type Props = {
   onOpenChange: (open: boolean) => void;
 };
 
-export default function InviteMemberModal({ orgId, open, onOpenChange }: Props) {
+export default function InviteMemberModal({
+  orgId,
+  open,
+  onOpenChange,
+}: Props) {
+  const [step, setStep] = useState<"generate" | "invite">("generate");
   const [inviteLink, setInviteLink] = useState("");
   const [email, setEmail] = useState("");
   const [sending, setSending] = useState(false);
   const [resetting, setResetting] = useState(false);
+  const [generating, setGenerating] = useState(false);
 
-  const fetchInviteLink = async () => {
+  // reset to first step when modal closes
+  useEffect(() => {
+    if (!open) {
+      setStep("generate");
+      setInviteLink("");
+      setEmail("");
+    }
+  }, [open]);
+
+  const generateInviteLink = async () => {
     try {
-      const res = await api.get(`/org/${orgId}/invite-link`, { withCredentials: true });
+      setGenerating(true);
+      const res = await api.get(`/org/${orgId}/invite-link`, {
+        withCredentials: true,
+      });
       setInviteLink(res.data.inviteLink);
+      setStep("invite");
     } catch (error: any) {
-      toast.error(error.response?.data?.message ?? "Failed to fetch invite link");
+      toast.error(
+        error.response?.data?.message ?? "Failed to fetch invite link",
+      );
+    } finally {
+      setGenerating(false);
     }
   };
-
-  useEffect(() => {
-    if (open && orgId) fetchInviteLink();
-  }, [open, orgId]);
 
   const copyLink = () => {
     navigator.clipboard.writeText(inviteLink);
@@ -49,7 +67,11 @@ export default function InviteMemberModal({ orgId, open, onOpenChange }: Props) 
   const resetLink = async () => {
     try {
       setResetting(true);
-      const res = await api.patch(`/org/${orgId}/reset-invite`, {}, { withCredentials: true });
+      const res = await api.patch(
+        `/org/${orgId}/reset-invite`,
+        {},
+        { withCredentials: true },
+      );
       setInviteLink(res.data.inviteLink);
       toast.success("Invite link reset");
     } catch (error: any) {
@@ -63,7 +85,11 @@ export default function InviteMemberModal({ orgId, open, onOpenChange }: Props) 
     if (!email.trim()) return;
     try {
       setSending(true);
-      await api.post(`/org/${orgId}/invite`, { email }, { withCredentials: true });
+      await api.post(
+        `/org/${orgId}/invite`,
+        { email },
+        { withCredentials: true },
+      );
       toast.success("Invite sent successfully");
       setEmail("");
     } catch (error: any) {
@@ -76,53 +102,89 @@ export default function InviteMemberModal({ orgId, open, onOpenChange }: Props) 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-md">
-        <DialogHeader>
-          <DialogTitle>Invite Members</DialogTitle>
-        </DialogHeader>
-
-        <div className="space-y-5 py-2">
-          {/* Invite Link */}
-          <div className="space-y-2">
-            <Label>Invite Link</Label>
-            <div className="flex items-center gap-2">
-              <Input value={inviteLink} readOnly className="text-xs text-muted-foreground" />
-              <Button variant="outline" size="icon" onClick={copyLink} title="Copy link">
-                <Copy className="h-4 w-4" />
-              </Button>
+        {step === "generate" ? (
+          <>
+            <DialogHeader>
+              <DialogTitle>Invite Members</DialogTitle>
+            </DialogHeader>
+            <div className="space-y-4 py-2">
+              <p className="text-sm text-muted-foreground">
+                Generate an invite link to share with others. Anyone with the
+                link can join this organization.
+              </p>
               <Button
-                variant="outline"
-                size="icon"
-                onClick={resetLink}
-                disabled={resetting}
-                title="Reset link"
+                className="w-full"
+                onClick={generateInviteLink}
+                disabled={generating}
               >
-                <RefreshCw className={`h-4 w-4 ${resetting ? "animate-spin" : ""}`} />
+                {generating ? "Generating…" : "Generate Invite Link"}
               </Button>
             </div>
-            <p className="text-xs text-muted-foreground">
-              Anyone with this link can join your organization.
-            </p>
-          </div>
+          </>
+        ) : (
+          <>
+            <DialogHeader>
+              <DialogTitle>Invite Members</DialogTitle>
+            </DialogHeader>
+            <div className="space-y-5 py-2">
+              {/* Invite Link */}
+              <div className="space-y-2">
+                <Label>Invite Link</Label>
+                <div className="flex items-center gap-2">
+                  <Input
+                    value={inviteLink}
+                    readOnly
+                    className="text-xs text-muted-foreground"
+                  />
+                  <Button
+                    variant="outline"
+                    size="icon"
+                    onClick={copyLink}
+                    title="Copy link"
+                  >
+                    <Copy className="h-4 w-4" />
+                  </Button>
+                  <Button
+                    variant="outline"
+                    size="icon"
+                    onClick={resetLink}
+                    disabled={resetting}
+                    title="Reset link"
+                  >
+                    <RefreshCw
+                      className={`h-4 w-4 ${resetting ? "animate-spin" : ""}`}
+                    />
+                  </Button>
+                </div>
+                <p className="text-xs text-muted-foreground">
+                  Anyone with this link can join your organization.
+                </p>
+              </div>
 
-          <Separator />
+              <Separator />
 
-          {/* Send via Email */}
-          <div className="space-y-2">
-            <Label>Send via Email</Label>
-            <div className="flex gap-2">
-              <Input
-                type="email"
-                placeholder="member@email.com"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                onKeyDown={(e) => e.key === "Enter" && sendInvite()}
-              />
-              <Button onClick={sendInvite} disabled={sending || !email.trim()}>
-                {sending ? "Sending..." : "Send"}
-              </Button>
+              {/* Send via Email */}
+              <div className="space-y-2">
+                <Label>Send via Email</Label>
+                <div className="flex gap-2">
+                  <Input
+                    type="email"
+                    placeholder="member@email.com"
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    onKeyDown={(e) => e.key === "Enter" && sendInvite()}
+                  />
+                  <Button
+                    onClick={sendInvite}
+                    disabled={sending || !email.trim()}
+                  >
+                    {sending ? "Sending…" : "Send"}
+                  </Button>
+                </div>
+              </div>
             </div>
-          </div>
-        </div>
+          </>
+        )}
       </DialogContent>
     </Dialog>
   );

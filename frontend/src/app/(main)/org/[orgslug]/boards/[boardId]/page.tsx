@@ -2,13 +2,14 @@
 
 import { useEffect, useState } from "react";
 import { useParams } from "next/navigation";
+import { useRouter } from "next/navigation";
 import {
   DragDropContext,
   Droppable,
   Draggable,
   DropResult,
 } from "@hello-pangea/dnd";
-import { Plus, User2 } from "lucide-react";
+import { ArrowLeft, Plus, User2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -51,10 +52,13 @@ const EMPTY: GroupedIssues = {
 
 export default function BoardPage() {
   const params = useParams();
+  const router = useRouter();
   const orgSlug = params.orgslug as string;
   const boardId = params.boardId as string;
 
   const [orgId, setOrgId] = useState<string | null>(null);
+  const [org, setOrg] = useState<any>(null);
+  const [board, setBoard] = useState<any>(null);
   const [issues, setIssues] = useState<GroupedIssues>(EMPTY);
   const [members, setMembers] = useState<Member[]>([]);
   const [loading, setLoading] = useState(true);
@@ -68,7 +72,10 @@ export default function BoardPage() {
   useEffect(() => {
     api
       .get(`/org/slug/${orgSlug}`, { withCredentials: true })
-      .then((res) => setOrgId(res.data.data.id))
+      .then((res) => {
+        setOrg(res.data.data);
+        setOrgId(res.data.data.id);
+      })
       .catch(console.error);
   }, [orgSlug]);
 
@@ -85,10 +92,18 @@ export default function BoardPage() {
       setLoading(false);
     }
   };
-
   useEffect(() => {
     if (!orgId) return;
+
     fetchIssues(orgId);
+
+    api
+      .get(`/org/${orgId}/board/${boardId}`, {
+        withCredentials: true,
+      })
+      .then((res) => setBoard(res.data.data))
+      .catch(console.error);
+
     api
       .get(`/org/${orgId}/members`, { withCredentials: true })
       .then((res) => setMembers(res.data.data))
@@ -164,20 +179,50 @@ export default function BoardPage() {
     }
   };
 
+  const totalIssues = Object.values(issues).flat().length;
+
+  const completedIssues = issues.DONE.length;
+
+  const completionPercentage =
+    totalIssues === 0 ? 0 : Math.round((completedIssues / totalIssues) * 100);
+
   if (loading)
     return (
-      <div className="flex h-full items-center justify-center p-10">
+      <div className="flex h-full w-full items-center justify-center">
         <p className="text-muted-foreground text-sm">Loading board…</p>
       </div>
     );
 
   return (
-    <div className="flex flex-col h-full p-6 gap-4">
+    <div className="flex flex-col h-full w-full p-6 gap-4">
       <div className="flex items-center justify-between">
-        <h1 className="text-2xl font-bold">Board</h1>
+        <h1 className="text-2xl font-bold">{org?.name}</h1>
         <Button onClick={() => openCreate("TODO")}>
           <Plus className="h-4 w-4 mr-1" /> New Issue
         </Button>
+      </div>
+
+      <div className="flex items-center justify-between border-b pb-4">
+        <div className="flex items-center gap-3">
+          <button
+            onClick={() => router.push(`/org/${orgSlug}`)}
+            className="rounded-md p-1 hover:bg-accent"
+          >
+            <ArrowLeft className="h-4 w-4 text-muted-foreground" />
+          </button>
+
+          <span className="text-sm text-muted-foreground">{org?.name}</span>
+
+          <span className="text-muted-foreground">/</span>
+
+          <span className="text-sm font-semibold">{board?.name}</span>
+        </div>
+
+        <div className="flex items-center gap-6">
+          <span className="text-xs text-muted-foreground font-mono">
+            {completionPercentage}% complete
+          </span>
+        </div>
       </div>
 
       <DragDropContext onDragEnd={onDragEnd}>

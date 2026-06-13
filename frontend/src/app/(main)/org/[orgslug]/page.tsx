@@ -2,10 +2,12 @@
 
 import { useEffect, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
-import Link from "next/link";
+import { Plus, Search } from "lucide-react";
+
+import { api } from "@/lib/axios";
+import { toast } from "sonner";
 
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
   Dialog,
   DialogContent,
@@ -14,15 +16,24 @@ import {
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Skeleton } from "@/components/ui/skeleton";
-import { api } from "@/lib/axios";
-import { toast } from "sonner";
-import InviteMemberModal from "@/components/InviteMemberModal";
+import { SidebarTrigger } from "@/components/ui/sidebar";
+
+import { BoardCard } from "@/components/BoardCard";
+import { ThemeToggle } from "@/components/ThemeToggler";
 
 type Board = {
   id: string;
   name: string;
-  createdAt: string;
+  progress: number;
+  members?: string[];
   _count: { issues: number };
+};
+
+type Member = {
+  id: string;
+  name: string;
+  role: string;
+  initials: string;
 };
 
 export default function OrganizationPage() {
@@ -31,43 +42,70 @@ export default function OrganizationPage() {
   const orgSlug = params.orgslug as string;
 
   const [orgId, setOrgId] = useState<string | null>(null);
+  const [orgName, setOrgName] = useState("");
   const [role, setRole] = useState<string | null>(null);
   const [boards, setBoards] = useState<Board[]>([]);
+  const [members, setMembers] = useState<Member[]>([]);
   const [loading, setLoading] = useState(true);
   const [showCreateForm, setShowCreateForm] = useState(false);
-  const [showInviteModal, setShowInviteModal] = useState(false);
   const [boardName, setBoardName] = useState("");
   const [creating, setCreating] = useState(false);
   const [leaving, setLeaving] = useState(false);
 
   useEffect(() => {
-    api
-      .get(`/org/slug/${orgSlug}`, { withCredentials: true })
-      .then((res) => {
-        setOrgId(res.data.data.id);
-        setRole(res.data.data.role);
-      })
-      .catch(console.error);
+    const load = async () => {
+      try {
+        const [slugRes] = await Promise.all([
+          api.get(`/org/slug/${orgSlug}`, { withCredentials: true }),
+        ]);
+
+        const { id, name, role } = slugRes.data.data;
+
+        const [boardsRes, membersRes] = await Promise.all([
+          api.get(`/org/${id}/board`, { withCredentials: true }),
+          api.get(`/org/${id}/members`, { withCredentials: true }),
+        ]);
+
+        const raw = membersRes.data.data ?? [];
+
+        setOrgId(id);
+        setOrgName(name);
+        setRole(role);
+        setBoards(boardsRes.data.data ?? []);
+        setMembers(
+          raw.map((m: any) => ({
+            id: m.user.id,
+            name: m.user.name,
+            role: m.role,
+            initials: m.user.name
+              .split(" ")
+              .map((w: string) => w[0])
+              .join("")
+              .slice(0, 2)
+              .toUpperCase(),
+          })),
+        );
+      } catch (error) {
+        console.error(error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    load();
   }, [orgSlug]);
 
   const fetchBoards = async () => {
+    if (!orgId) return;
     try {
-      setLoading(true);
       const res = await api.get(`/org/${orgId}/board`, {
         withCredentials: true,
       });
       setBoards(res.data.data ?? []);
     } catch (error) {
       console.error(error);
-    } finally {
-      setLoading(false);
     }
   };
-
-  useEffect(() => {
-    if (!orgId) return;
-    fetchBoards();
-  }, [orgId]);
 
   const createBoard = async () => {
     if (!boardName.trim()) return;
@@ -100,44 +138,159 @@ export default function OrganizationPage() {
   };
 
   const isOwner = role === "OWNER";
+  const totalIssues = boards.reduce((a, b) => a + (b._count?.issues ?? 0), 0);
+  const doneIssues = boards.reduce(
+    (a, b) =>
+      a + Math.round(((b.progress ?? 0) / 100) * (b._count?.issues ?? 0)),
+    0,
+  );
 
   return (
-    <div className="p-6 space-y-6">
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-3xl font-bold">Boards</h1>
-          <p className="text-muted-foreground">
-            Manage your organization boards
-          </p>
-        </div>
+    <div className="flex h-screen w-full overflow-hidden">
+      <main className="flex-1 flex flex-col min-w-0 overflow-hidden">
+        {/* Topbar */}
+        <header className="h-16 shrink-0 border-b flex items-center justify-between px-6 bg-background/60 backdrop-blur-md sticky top-0 z-10">
+          <div className="flex items-center gap-3">
+            <SidebarTrigger />
+            <div>
+              <h1 className="text-[15px] font-semibold leading-tight">
+                {orgName || <Skeleton className="h-4 w-32" />}
+              </h1>
+              <p className="text-[11px] text-muted-foreground">
+                {boards.length} active boards
+              </p>
+            </div>
+          </div>
 
-        <div className="flex items-center gap-4">
-          {role === null ? (
-            <>
-              <Skeleton className="h-9 w-28" />
-              <Skeleton className="h-9 w-28" />
-            </>
-          ) : isOwner ? (
-            <>
-              <Button onClick={() => setShowInviteModal(true)}>
-                Add Member
-              </Button>
-              <Button onClick={() => setShowCreateForm((prev) => !prev)}>
-                Create Board
-              </Button>
-            </>
-          ) : (
-            <Button variant="destructive" onClick={leaveOrg} disabled={leaving}>
-              {leaving ? "Leaving..." : "Leave Organisation"}
-            </Button>
-          )}
-        </div>
-      </div>
+          <div className="flex items-center gap-2">
+            <div className="hidden md:flex items-center gap-2 h-9 px-3 rounded-md border bg-muted/40 text-xs text-muted-foreground w-64">
+              <Search className="size-3.5" />
+              <span>Search boards, tasks, members…</span>
+              <span className="ml-auto font-mono text-[10px] opacity-60">
+                ⌘K
+              </span>
+            </div>
+            <ThemeToggle />
 
+            {role === null ? (
+              <>
+                <Skeleton className="h-9 w-28" />
+              </>
+            ) : isOwner ? (
+              <>
+                <Button size="sm" onClick={() => setShowCreateForm(true)}>
+                  <Plus className="size-3.5 mr-1.5" />
+                  New board
+                </Button>
+              </>
+            ) : (
+              <Button
+                variant="destructive"
+                size="sm"
+                onClick={leaveOrg}
+                disabled={leaving}
+              >
+                {leaving ? "Leaving…" : "Leave org"}
+              </Button>
+            )}
+          </div>
+        </header>
+
+        {/* Scrollable content */}
+        <div className="flex-1 overflow-y-auto p-6 space-y-6">
+          {/* Hero stats */}
+          <div className="rounded-xl border bg-card p-6 space-y-5">
+            <div>
+              <p className="text-[10px] uppercase tracking-[0.18em] text-muted-foreground mb-2">
+                This week
+              </p>
+              <h2 className="text-2xl font-bold">
+                Ship faster with focused boards.
+              </h2>
+              <p className="text-sm text-muted-foreground mt-1">
+                Track work across {boards.length} boards. {members.length}{" "}
+                teammates contributing this cycle.
+              </p>
+            </div>
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+              {[
+                { label: "Total tasks", value: totalIssues },
+                { label: "Completed", value: doneIssues },
+                { label: "Boards", value: boards.length },
+                { label: "Members", value: members.length },
+              ].map((s) => (
+                <div
+                  key={s.label}
+                  className="rounded-lg border bg-muted/30 p-4"
+                >
+                  <p className="text-[10px] uppercase tracking-[0.15em] text-muted-foreground mb-2">
+                    {s.label}
+                  </p>
+                  <p className="text-3xl font-bold">{s.value}</p>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {/* Boards section */}
+          <div>
+            <div className="flex items-end justify-between mb-4">
+              <div>
+                <p className="text-[10px] uppercase tracking-[0.18em] text-muted-foreground">
+                  Workspace
+                </p>
+                <h3 className="text-lg font-semibold">Boards</h3>
+              </div>
+              <span className="text-[11px] text-muted-foreground font-mono">
+                sorted · recent
+              </span>
+            </div>
+
+            {loading ? (
+              <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
+                {[1, 2, 3].map((i) => (
+                  <div key={i} className="rounded-xl border p-5 space-y-4">
+                    <Skeleton className="h-3 w-16" />
+                    <Skeleton className="h-5 w-36" />
+                    <Skeleton className="h-1 w-full mt-6" />
+                    <div className="flex items-center justify-between">
+                      <div className="flex gap-1">
+                        <Skeleton className="size-7 rounded-full" />
+                        <Skeleton className="size-7 rounded-full" />
+                      </div>
+                      <Skeleton className="h-3 w-14" />
+                    </div>
+                  </div>
+                ))}
+              </div>
+            ) : boards.length === 0 ? (
+              <div className="rounded-xl border p-10 text-center text-muted-foreground text-sm">
+                No boards yet.{" "}
+                {isOwner && (
+                  <button
+                    className="underline underline-offset-2 hover:text-foreground transition"
+                    onClick={() => setShowCreateForm(true)}
+                  >
+                    Create your first board.
+                  </button>
+                )}
+              </div>
+            ) : (
+              <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
+                {boards.map((board) => (
+                  <BoardCard key={board.id} board={board} orgSlug={orgSlug} />
+                ))}
+              </div>
+            )}
+          </div>
+        </div>
+      </main>
+
+      {/* Create board dialog */}
       <Dialog open={showCreateForm} onOpenChange={setShowCreateForm}>
         <DialogContent className="sm:max-w-md">
           <DialogHeader>
-            <DialogTitle>Create New Board</DialogTitle>
+            <DialogTitle>Create new board</DialogTitle>
           </DialogHeader>
           <div className="space-y-4 py-2">
             <Input
@@ -148,7 +301,7 @@ export default function OrganizationPage() {
             />
             <div className="flex gap-2">
               <Button onClick={createBoard} disabled={creating}>
-                {creating ? "Creating..." : "Create"}
+                {creating ? "Creating…" : "Create"}
               </Button>
               <Button
                 variant="outline"
@@ -160,62 +313,6 @@ export default function OrganizationPage() {
           </div>
         </DialogContent>
       </Dialog>
-
-      {orgId && (
-        <InviteMemberModal
-          orgId={orgId}
-          open={showInviteModal}
-          onOpenChange={setShowInviteModal}
-        />
-      )}
-
-      {loading && (
-        <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
-          {[1, 2, 3].map((item) => (
-            <Card key={item}>
-              <CardContent className="p-6 space-y-4">
-                <Skeleton className="h-5 w-32" />
-                <Skeleton className="h-4 w-24" />
-                <Skeleton className="h-9 w-full" />
-              </CardContent>
-            </Card>
-          ))}
-        </div>
-      )}
-
-      {!loading && (
-        <>
-          {boards.length === 0 ? (
-            <Card>
-              <CardContent className="py-10 text-center">
-                <p className="text-muted-foreground">
-                  No boards found. Create your first board.
-                </p>
-              </CardContent>
-            </Card>
-          ) : (
-            <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
-              {boards.map((board) => (
-                <Card key={board.id}>
-                  <CardHeader>
-                    <CardTitle>{board.name}</CardTitle>
-                  </CardHeader>
-                  <CardContent className="space-y-4">
-                    <p className="text-sm text-muted-foreground">
-                      {board._count.issues} issues
-                    </p>
-                    <Button asChild className="w-full">
-                      <Link href={`/org/${orgSlug}/boards/${board.id}`}>
-                        Open Board
-                      </Link>
-                    </Button>
-                  </CardContent>
-                </Card>
-              ))}
-            </div>
-          )}
-        </>
-      )}
     </div>
   );
 }

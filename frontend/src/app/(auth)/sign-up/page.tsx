@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { api } from "@/lib/axios";
+import { localApi } from "@/lib/localApi";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { toast } from "sonner";
@@ -25,7 +26,7 @@ export default function SignUpPage() {
     e.preventDefault();
     try {
       setLoading(true);
-      const { data } = await api.post("/auth/register", form);
+      const { data } = await localApi.post("/auth/register", form);
       toast.success(data.message);
 
       const params = new URLSearchParams(window.location.search);

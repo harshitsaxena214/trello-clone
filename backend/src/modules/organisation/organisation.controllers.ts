@@ -66,27 +66,17 @@ export const getOrganisations = async (req: Request, res: Response) => {
     const userId = req.user.id;
 
     const organisations = await prisma.organization.findMany({
-      where: {
-        members: {
-          some: {
-            userId,
-          },
-        },
+      where: { members: { some: { userId } } },
+      include: {
+        _count: { select: { members: true, boards: true } },
       },
     });
 
-    return res.status(200).json({
-      success: true,
-      organisations,
-      message: "Organisations fetched Successfully",
-    });
+    return res.status(200).json({ success: true, data: organisations });
   } catch (error) {
-    console.error(error);
-
-    return res.status(500).json({
-      success: false,
-      message: "Failed to fetch organisations",
-    });
+    return res
+      .status(500)
+      .json({ success: false, message: "Failed to fetch organisations" });
   }
 };
 
@@ -654,12 +644,10 @@ export const getOrgBySlug = async (req: Request, res: Response) => {
         .json({ success: false, message: "Organisation not found" });
     }
     if (org.members.length === 0) {
-      return res
-        .status(403)
-        .json({
-          success: false,
-          message: "You are not a member of this organisation",
-        });
+      return res.status(403).json({
+        success: false,
+        message: "You are not a member of this organisation",
+      });
     }
 
     return res.status(200).json({

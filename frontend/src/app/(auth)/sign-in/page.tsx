@@ -10,11 +10,9 @@ import {
   Card,
   CardContent,
   CardDescription,
-  CardFooter,
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import Link from "next/link";
 
 export default function SignInPage() {
   const router = useRouter();
@@ -37,7 +35,7 @@ export default function SignInPage() {
       }
 
       const { data: response } = await api.get("/org");
-      const orgs = response.organisations;
+      const orgs = response.data;
       router.push(orgs.length === 0 ? "/onboarding" : `/org/${orgs[0].slug}`);
     } catch (error: any) {
       toast.error(error?.response?.data?.message ?? "Login failed");
@@ -71,17 +69,6 @@ export default function SignInPage() {
               {loading ? "Signing In..." : "Sign In"}
             </Button>
           </form>
-          <CardFooter className="mt-3 justify-center">
-            <p className="text-sm text-muted-foreground">
-              Don't have an account?{" "}
-              <Link
-                href="/sign-up"
-                className="font-medium text-primary hover:underline"
-              >
-                Sign Up
-              </Link>
-            </p>
-          </CardFooter>
         </CardContent>
       </Card>
     </div>
