@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { api } from "@/lib/axios";
 import { Button } from "@/components/ui/button";
@@ -20,6 +20,16 @@ export default function SignInPage() {
   const router = useRouter();
   const [loading, setLoading] = useState(false);
   const [form, setForm] = useState({ email: "", password: "" });
+
+  useEffect(() => {
+    api
+      .get("/org", { withCredentials: true })
+      .then((res) => {
+        const orgs = res.data.data ?? [];
+        router.replace(orgs.length === 0 ? "/onboarding" : `/org/${orgs[0].slug}`);
+      })
+      .catch(() => {});
+  }, []);
 
   async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
@@ -71,18 +81,18 @@ export default function SignInPage() {
               {loading ? "Signing In..." : "Sign In"}
             </Button>
           </form>
-          <CardFooter className="mt-3 justify-center">
-            <p className="text-sm text-muted-foreground">
-              Don't have an account?{" "}
-              <Link
-                href="/sign-up"
-                className="font-medium text-primary hover:underline"
-              >
-                SignUp
-              </Link>
-            </p>
-          </CardFooter>
         </CardContent>
+        <CardFooter className="justify-center">
+          <p className="text-sm text-muted-foreground">
+            Don't have an account?{" "}
+            <Link
+              href="/sign-up"
+              className="font-medium text-primary hover:underline"
+            >
+              Sign Up
+            </Link>
+          </p>
+        </CardFooter>
       </Card>
     </div>
   );
