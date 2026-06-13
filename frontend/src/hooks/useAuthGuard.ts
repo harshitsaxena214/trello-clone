@@ -24,14 +24,13 @@ export function useAuthGuard(options: Options = {}) {
       .get("/auth/is-authenticated", { withCredentials: true })
       .then(async (res) => {
         if (!res.data.isAuthenticated) {
-          if (requireAuth || requireOrgs || isRoot) {
+          if (requireAuth || requireOrgs) {
             router.replace(
-              isRoot
-                ? "/sign-in"
-                : `/sign-in?returnUrl=${encodeURIComponent(window.location.pathname)}`,
+              `/sign-in?returnUrl=${encodeURIComponent(window.location.pathname)}`,
             );
             return;
           }
+          // isRoot or requireNoAuth — unauthenticated user, just show the page
           setChecking(false);
           return;
         }
@@ -43,6 +42,7 @@ export function useAuthGuard(options: Options = {}) {
           const hasOrgs = orgs.length > 0;
 
           if (isRoot) {
+            // authenticated user on / → send to their org
             router.replace(hasOrgs ? `/org/${orgs[0].slug}` : "/onboarding");
             return;
           }
@@ -66,14 +66,14 @@ export function useAuthGuard(options: Options = {}) {
         setChecking(false);
       })
       .catch(() => {
-        if (requireAuth || requireOrgs || isRoot) {
+        // not authenticated
+        if (requireAuth || requireOrgs) {
           router.replace(
-            isRoot
-              ? "/sign-in"
-              : `/sign-in?returnUrl=${encodeURIComponent(window.location.pathname)}`,
+            `/sign-in?returnUrl=${encodeURIComponent(window.location.pathname)}`,
           );
           return;
         }
+        // isRoot or requireNoAuth — unauthenticated user, just show the page
         setChecking(false);
       });
   }, []);

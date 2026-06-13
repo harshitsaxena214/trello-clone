@@ -55,9 +55,14 @@ export default function OrganizationPage() {
   useEffect(() => {
     const load = async () => {
       try {
-        const [slugRes] = await Promise.all([
-          api.get(`/org/slug/${orgSlug}`, { withCredentials: true }),
-        ]);
+        const slugRes = await api
+          .get(`/org/slug/${orgSlug}`, { withCredentials: true })
+          .catch((err) => {
+            if (err.response?.status === 404 || err.response?.status === 403) {
+              router.replace("/not-found");
+            }
+            throw err;
+          });
 
         const { id, name, role } = slugRes.data.data;
 

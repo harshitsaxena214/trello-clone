@@ -1,8 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { useParams } from "next/navigation";
-import { useRouter } from "next/navigation";
+import { useParams, useRouter } from "next/navigation";
 import {
   DragDropContext,
   Droppable,
@@ -70,45 +69,70 @@ export default function BoardPage() {
   const [creating, setCreating] = useState(false);
 
   useEffect(() => {
-    api
-      .get(`/org/slug/${orgSlug}`, { withCredentials: true })
-      .then((res) => {
-        setOrg(res.data.data);
-        setOrgId(res.data.data.id);
-      })
-      .catch(console.error);
-  }, [orgSlug]);
+    const load = async () => {
+      try {
+        setLoading(true);
+        const slugRes = await api
+          .get(`/org/slug/${orgSlug}`, { withCredentials: true })
+          .catch((err) => {
+            if (
+              err.response?.status === 404 ||
+              err.response?.status === 403 ||
+              err.response?.status === 400
+            ) {
+              router.replace("/not-found");
+            }
+            throw err;
+          });
 
-  const fetchIssues = async (id: string) => {
+        const orgData = slugRes.data.data;
+        const id = orgData.id;
+
+        const [boardRes, issuesRes, membersRes] = await Promise.all([
+          api
+            .get(`/org/${id}/board/${boardId}`, { withCredentials: true })
+            .catch((err) => {
+              if (
+                err.response?.status === 404 ||
+                err.response?.status === 403 ||
+                err.response?.status === 400
+              ) {
+                router.replace("/not-found");
+              }
+              throw err;
+            }),
+          api.get(`/org/${id}/board/${boardId}/issue`, {
+            withCredentials: true,
+          }),
+          api.get(`/org/${id}/members`, { withCredentials: true }),
+        ]);
+
+        setOrg(orgData);
+        setOrgId(id);
+        setBoard(boardRes.data.data);
+        setIssues(issuesRes.data.data ?? EMPTY);
+        setMembers(membersRes.data.data ?? []);
+      } catch (error) {
+        console.error(error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    load();
+  }, [orgSlug, boardId, router]);
+
+  const fetchIssues = async () => {
+    if (!orgId) return;
     try {
-      setLoading(true);
-      const res = await api.get(`/org/${id}/board/${boardId}/issue`, {
+      const res = await api.get(`/org/${orgId}/board/${boardId}/issue`, {
         withCredentials: true,
       });
-      setIssues(res.data.data);
+      setIssues(res.data.data ?? EMPTY);
     } catch (error) {
       console.error(error);
-    } finally {
-      setLoading(false);
     }
   };
-  useEffect(() => {
-    if (!orgId) return;
-
-    fetchIssues(orgId);
-
-    api
-      .get(`/org/${orgId}/board/${boardId}`, {
-        withCredentials: true,
-      })
-      .then((res) => setBoard(res.data.data))
-      .catch(console.error);
-
-    api
-      .get(`/org/${orgId}/members`, { withCredentials: true })
-      .then((res) => setMembers(res.data.data))
-      .catch(console.error);
-  }, [orgId]);
 
   const onDragEnd = async (result: DropResult) => {
     const { source, destination, draggableId } = result;
@@ -136,7 +160,7 @@ export default function BoardPage() {
       );
     } catch {
       toast.error("Failed to update position");
-      if (orgId) fetchIssues(orgId);
+      fetchIssues();
     }
   };
 
@@ -180,9 +204,7 @@ export default function BoardPage() {
   };
 
   const totalIssues = Object.values(issues).flat().length;
-
   const completedIssues = issues.DONE.length;
-
   const completionPercentage =
     totalIssues === 0 ? 0 : Math.round((completedIssues / totalIssues) * 100);
 
@@ -210,19 +232,13 @@ export default function BoardPage() {
           >
             <ArrowLeft className="h-4 w-4 text-muted-foreground" />
           </button>
-
           <span className="text-sm text-muted-foreground">{org?.name}</span>
-
           <span className="text-muted-foreground">/</span>
-
           <span className="text-sm font-semibold">{board?.name}</span>
         </div>
-
-        <div className="flex items-center gap-6">
-          <span className="text-xs text-muted-foreground font-mono">
-            {completionPercentage}% complete
-          </span>
-        </div>
+        <span className="text-xs text-muted-foreground font-mono">
+          {completionPercentage}% complete
+        </span>
       </div>
 
       <DragDropContext onDragEnd={onDragEnd}>
@@ -254,7 +270,9 @@ export default function BoardPage() {
                   <div
                     ref={provided.innerRef}
                     {...provided.droppableProps}
-                    className={`flex flex-col gap-2 p-3 flex-1 overflow-y-auto min-h-[100px] ${snapshot.isDraggingOver ? "bg-muted" : ""}`}
+                    className={`flex flex-col gap-2 p-3 flex-1 overflow-y-auto min-h-[100px] ${
+                      snapshot.isDraggingOver ? "bg-muted" : ""
+                    }`}
                   >
                     {issues[col.key].map((issue, index) => (
                       <Draggable
@@ -271,7 +289,9 @@ export default function BoardPage() {
                               provided.draggableProps
                                 .style as React.CSSProperties
                             }
-                            className={`bg-background rounded-lg p-3 shadow-sm border border-border/50 cursor-grab active:cursor-grabbing space-y-2 ${snapshot.isDragging ? "shadow-lg rotate-1" : ""}`}
+                            className={`bg-background rounded-lg p-3 shadow-sm border border-border/50 cursor-grab active:cursor-grabbing space-y-2 ${
+                              snapshot.isDragging ? "shadow-lg rotate-1" : ""
+                            }`}
                           >
                             <p className="text-sm font-medium">{issue.title}</p>
                             {issue.description && (
