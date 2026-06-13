@@ -10,9 +10,11 @@ import {
   Card,
   CardContent,
   CardDescription,
+  CardFooter,
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
+import Link from "next/link";
 
 export default function SignInPage() {
   const router = useRouter();
@@ -69,6 +71,17 @@ export default function SignInPage() {
               {loading ? "Signing In..." : "Sign In"}
             </Button>
           </form>
+          <CardFooter className="mt-3 justify-center">
+            <p className="text-sm text-muted-foreground">
+              Don't have an account?{" "}
+              <Link
+                href="/sign-up"
+                className="font-medium text-primary hover:underline"
+              >
+                SignUp
+              </Link>
+            </p>
+          </CardFooter>
         </CardContent>
       </Card>
     </div>
