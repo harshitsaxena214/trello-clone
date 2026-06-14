@@ -50,7 +50,7 @@ export default function SignUpPage() {
       <Card className="w-full max-w-md">
         <CardHeader>
           <CardTitle>Create an account</CardTitle>
-          <CardDescription>Get started with TaskFlow.</CardDescription>
+          <CardDescription>Get started with KanbaFlow.</CardDescription>
         </CardHeader>
         <CardContent>
           <form onSubmit={handleSubmit} className="space-y-4">

@@ -43,7 +43,7 @@ export const metadata: Metadata = {
     card: "summary_large_image",
     title: "KanbaFlow",
     description: "Project management that moves teams forward.",
-    images: ["/og-image.png"],
+    images: ["https://kanbaflow.vercel.app/og-image.png"],
   },
 };
 
