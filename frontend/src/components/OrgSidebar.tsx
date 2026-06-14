@@ -71,10 +71,10 @@ export function OrgSidebar() {
             <SidebarMenuButton size="lg" asChild>
               <div className="flex items-center gap-2.5">
                 <div className="size-8 rounded-md bg-foreground text-background grid place-items-center font-bold text-sm shrink-0">
-                  T
+                  K
                 </div>
                 <div className="leading-tight">
-                  <p className="text-sm font-semibold">TaskFlow</p>
+                  <p className="text-sm font-semibold">KanbaFlow</p>
                   <p className="text-[10px] uppercase tracking-[0.18em] text-muted-foreground">
                     v1.0 · beta
                   </p>

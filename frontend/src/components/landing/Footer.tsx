@@ -16,7 +16,7 @@ export function Footer() {
       transition={{ duration: 0.5, ease: "easeOut" }}
     >
       <div className="mx-auto flex max-w-5xl items-center justify-between px-8 py-6 text-xs text-zinc-600">
-        <span>© {new Date().getFullYear()} TaskFlow</span>
+        <span>© {new Date().getFullYear()} KanbaFlow</span>
         <span>Made for makers.</span>
       </div>
     </motion.footer>

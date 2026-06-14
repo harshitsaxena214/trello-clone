@@ -17,7 +17,7 @@ export function Navbar() {
           <Layers className="h-4 w-4 text-black" />
         </div>
         <span className="text-sm font-semibold tracking-tight text-white">
-          TaskFlow
+          KanbaFlow
         </span>
       </div>
       <nav className="flex items-center gap-3">
