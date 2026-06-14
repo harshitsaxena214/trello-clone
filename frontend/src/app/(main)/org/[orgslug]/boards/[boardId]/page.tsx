@@ -242,7 +242,7 @@ export default function BoardPage() {
       </div>
 
       <DragDropContext onDragEnd={onDragEnd}>
-        <div className="grid grid-cols-4 gap-4 flex-1 overflow-hidden">
+        <div className="grid grid-cols-2 xl:grid-cols-4 gap-4 flex-1 overflow-auto">
           {COLUMNS.map((col) => (
             <div
               key={col.key}
@@ -289,20 +289,22 @@ export default function BoardPage() {
                               provided.draggableProps
                                 .style as React.CSSProperties
                             }
-                            className={`bg-background rounded-lg p-3 shadow-sm border border-border/50 cursor-grab active:cursor-grabbing space-y-2 ${
+                            className={`bg-background rounded-lg p-2 sm:p-3 shadow-sm border border-border/50 cursor-grab active:cursor-grabbing space-y-1.5 sm:space-y-2 ${
                               snapshot.isDragging ? "shadow-lg rotate-1" : ""
                             }`}
                           >
-                            <p className="text-sm font-medium">{issue.title}</p>
+                            <p className="text-xs sm:text-sm font-medium">
+                              {issue.title}
+                            </p>
                             {issue.description && (
-                              <p className="text-xs text-muted-foreground line-clamp-2">
+                              <p className="text-[11px] sm:text-xs text-muted-foreground line-clamp-2">
                                 {issue.description}
                               </p>
                             )}
                             {issue.assignee && (
-                              <div className="flex items-center gap-1.5">
-                                <User2 className="h-3 w-3 text-muted-foreground" />
-                                <span className="text-xs text-muted-foreground">
+                              <div className="flex items-center gap-1">
+                                <User2 className="h-2.5 w-2.5 sm:h-3 sm:w-3 text-muted-foreground" />
+                                <span className="text-[11px] sm:text-xs text-muted-foreground truncate">
                                   {issue.assignee.name}
                                 </span>
                               </div>
