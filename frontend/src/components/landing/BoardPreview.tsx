@@ -28,12 +28,12 @@ const COLUMNS = [
 export function BoardPreview() {
   return (
     <motion.div
-      className="mb-24 rounded-2xl border border-white/[0.08] bg-[#111111] p-6"
+      className="mb-24 rounded-2xl border border-white/[0.08] bg-[#111111] p-4 sm:p-6"
       initial={{ opacity: 0, y: 40 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.6, ease: "easeOut", delay: 0.55 }}
     >
-      <div className="grid grid-cols-3 gap-4">
+      <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
         {COLUMNS.map((col, colIndex) => (
           <motion.div
             key={col.title}
