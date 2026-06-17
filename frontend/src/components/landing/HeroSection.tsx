@@ -79,13 +79,13 @@ export function Hero() {
         transition={{ duration: 0.5, delay: 0.45 }}
       >
         <Link
-          href="/sign-in"
+          href="/login"
           className="inline-flex items-center gap-2 rounded-md border border-white/10 bg-transparent px-5 py-2.5 text-sm font-medium text-white hover:bg-white/10 transition-colors duration-200"
         >
           Sign in
         </Link>
         <Link
-          href="/sign-up"
+          href="/login"
           className="inline-flex items-center gap-2 rounded-md bg-white px-5 py-2.5 text-sm font-medium text-black hover:bg-zinc-200 transition-colors duration-200"
         >
           Start for free <MoveRight className="h-4 w-4" />

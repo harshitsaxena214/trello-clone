@@ -19,7 +19,7 @@ export default function LoginPage() {
     <div className="flex min-h-screen items-center justify-center">
       <Card className="w-full max-w-md">
         <CardHeader>
-          <CardTitle>Welcome to TaskFlow</CardTitle>
+          <CardTitle>Welcome to KanbaFlow</CardTitle>
           <CardDescription>
             Sign in to access your organisations and boards.
           </CardDescription>
