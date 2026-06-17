@@ -2,7 +2,7 @@ import { Request, Response } from "express";
 import { prisma } from "../../lib/db";
 
 export const getuserProfile = async (req: Request, res: Response) => {
-  const userId = req.user.id;
+  const userId = req.user!.id;
   try {
     const user = await prisma.user.findUnique({ where: { id: userId } });
     if (!user) {
@@ -16,7 +16,6 @@ export const getuserProfile = async (req: Request, res: Response) => {
       data: {
         name: user.name,
         email: user.email,
-        isAccountVerified: user.isAccountVerified,
       },
     });
   } catch (error: any) {
@@ -25,7 +24,7 @@ export const getuserProfile = async (req: Request, res: Response) => {
 };
 
 export const deleteUserAccount = async (req: Request, res: Response) => {
-  const userId = req.user.id;
+  const userId = req.user!.id;
   try {
     const user = await prisma.user.findUnique({ where: { id: userId } });
     if (!user) {

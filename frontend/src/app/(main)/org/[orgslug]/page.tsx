@@ -14,6 +14,16 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 import { Input } from "@/components/ui/input";
 import { Skeleton } from "@/components/ui/skeleton";
 import { SidebarTrigger } from "@/components/ui/sidebar";
@@ -51,6 +61,8 @@ export default function OrganizationPage() {
   const [boardName, setBoardName] = useState("");
   const [creating, setCreating] = useState(false);
   const [leaving, setLeaving] = useState(false);
+  const [deleting, setDeleting] = useState(false);
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
 
   useEffect(() => {
     const load = async () => {
@@ -112,6 +124,26 @@ export default function OrganizationPage() {
     }
   };
 
+  const deleteOrg = async () => {
+    if (!orgId) return;
+
+    try {
+      setDeleting(true);
+
+      await api.delete(`/org/${orgId}`);
+
+      toast.success("Organization deleted successfully");
+
+      router.push("/org");
+    } catch (error: any) {
+      toast.error(
+        error.response?.data?.message ?? "Failed to delete organization",
+      );
+    } finally {
+      setDeleting(false);
+    }
+  };
+
   const createBoard = async () => {
     if (!boardName.trim()) return;
     try {
@@ -132,7 +164,7 @@ export default function OrganizationPage() {
       setLeaving(true);
       await api.delete(`/org/${orgId}/leave`, { withCredentials: true });
       toast.success("Left organisation successfully");
-      router.push("/onboarding");
+      router.push("/org");
     } catch (error: any) {
       toast.error(
         error.response?.data?.message ?? "Failed to leave organisation",
@@ -186,6 +218,13 @@ export default function OrganizationPage() {
                 <Button size="sm" onClick={() => setShowCreateForm(true)}>
                   <Plus className="size-3.5 mr-1.5" />
                   New board
+                </Button>
+                <Button
+                  variant="destructive"
+                  size="sm"
+                  onClick={() => setDeleteDialogOpen(true)}
+                >
+                  Delete Org
                 </Button>
               </>
             ) : (
@@ -290,6 +329,35 @@ export default function OrganizationPage() {
           </div>
         </div>
       </main>
+
+      <AlertDialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Delete Organization?</AlertDialogTitle>
+
+            <AlertDialogDescription>
+              This action cannot be undone.
+              <br />
+              <br />
+              All boards, tasks, members and workspace data inside{" "}
+              <strong>{orgName}</strong> will be permanently deleted.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+
+            <AlertDialogAction
+              onClick={async () => {
+                await deleteOrg();
+                setDeleteDialogOpen(false);
+              }}
+            >
+              Delete Organization
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
 
       {/* Create board dialog */}
       <Dialog open={showCreateForm} onOpenChange={setShowCreateForm}>
