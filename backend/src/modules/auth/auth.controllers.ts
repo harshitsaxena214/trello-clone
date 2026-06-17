@@ -1,37 +1,33 @@
 import { Request, Response } from "express";
-import jwt from "jsonwebtoken";
 import prisma from "../../lib/db";
 import { env } from "../../lib/env";
 
 export const syncUser = async (req: Request, res: Response) => {
-  const { email, name, image } = req.body;
-
-  let user = await prisma.user.findUnique({
-    where: { email },
-  });
-
-  if (!user) {
-    user = await prisma.user.create({
-      data: {
-        email,
-        name,
-        avatar: image,
-      },
-    });
+  if (req.headers.authorization !== `Bearer ${env.AUTH_SECRET}`) {
+    return res.status(403).json({ success: false, message: "Forbidden" });
   }
 
-  const token = jwt.sign(
-    {
-      id: user.id,
-    },
-    env.JWT_SECRET,
-    {
-      expiresIn: "7d",
-    },
-  );
+  const { email, name, avatar } = req.body;
+  if (!email) {
+    return res
+      .status(400)
+      .json({ success: false, message: "Email is required" });
+  }
 
-  return res.json({
-    token,
-    user,
-  });
+  try {
+    let user = await prisma.user.findUnique({ where: { email } });
+
+    if (!user) {
+      user = await prisma.user.create({ data: { email, name, avatar } });
+    } else if (user.name !== name || user.avatar !== avatar) {
+      user = await prisma.user.update({
+        where: { email },
+        data: { name, avatar },
+      });
+    }
+
+    return res.status(200).json({ success: true, data: user });
+  } catch (error: any) {
+    return res.status(500).json({ success: false, message: error.message });
+  }
 };

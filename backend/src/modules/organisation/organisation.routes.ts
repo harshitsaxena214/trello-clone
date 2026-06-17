@@ -3,7 +3,6 @@ import express from "express";
 import {
   createOrganisationSchema,
   updateOrganisationSchema,
-  sendInviteSchema,
 } from "./organisation.validations";
 import { validate } from "../../middlewares/validate";
 import {
@@ -19,12 +18,10 @@ import {
   leaveOrganisation,
   removeMember,
   resetInviteLink,
-  sendInviteLink,
   updateOrganisation,
 } from "./organisation.controllers";
 import {
   authMiddleware,
-  verifiedMiddleware,
 } from "../../middlewares/authMiddelware";
 
 const router = express.Router();
@@ -32,60 +29,46 @@ const router = express.Router();
 router.post(
   "/",
   authMiddleware,
-  verifiedMiddleware,
   validate(createOrganisationSchema),
   createOrganisation,
 );
-router.get("/", authMiddleware, verifiedMiddleware, getOrganisations);
-router.get("/slug/:slug", authMiddleware, verifiedMiddleware, getOrgBySlug);
+router.get("/", authMiddleware, getOrganisations);
+router.get("/slug/:slug", authMiddleware,  getOrgBySlug);
 router.get("/invite/:inviteCode", authMiddleware, getOrgByInviteCode);
 router.post(
   "/join/:inviteCode",
   authMiddleware,
-  verifiedMiddleware,
   joinOrganisation,
 );
-router.get("/:id", authMiddleware, verifiedMiddleware, getOrganisation);
+router.get("/:id", authMiddleware,  getOrganisation);
 router.put(
   "/:id",
   authMiddleware,
-  verifiedMiddleware,
   validate(updateOrganisationSchema),
   updateOrganisation,
 );
-router.delete("/:id", authMiddleware, verifiedMiddleware, deleteOrganisation);
+router.delete("/:id", authMiddleware, deleteOrganisation);
 
-router.get("/:id/members", authMiddleware, verifiedMiddleware, getMembers);
+router.get("/:id/members", authMiddleware,  getMembers);
 router.delete(
   "/:id/members/:userId",
   authMiddleware,
-  verifiedMiddleware,
   removeMember,
 );
 router.delete(
   "/:id/leave",
   authMiddleware,
-  verifiedMiddleware,
   leaveOrganisation,
 );
 
 router.get(
   "/:id/invite-link",
   authMiddleware,
-  verifiedMiddleware,
   getInviteLink,
-);
-router.post(
-  "/:id/invite",
-  authMiddleware,
-  verifiedMiddleware,
-  validate(sendInviteSchema),
-  sendInviteLink,
 );
 router.patch(
   "/:id/reset-invite",
   authMiddleware,
-  verifiedMiddleware,
   resetInviteLink,
 );
 

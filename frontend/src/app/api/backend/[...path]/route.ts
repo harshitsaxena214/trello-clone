@@ -1,16 +1,17 @@
-
 import { cookies } from "next/headers";
 import { NextRequest, NextResponse } from "next/server";
 
 async function handler(
   req: NextRequest,
-  { params }: { params: { path: string[] } },
+  { params }: { params: Promise<{ path: string[] }> },
 ) {
+  const { path } = await params;
+
   const token = (await cookies()).get("taskflow-session-token")?.value;
   if (!token)
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
-  const url = `${process.env.BACKEND_URL}/${params.path.join("/")}${req.nextUrl.search}`;
+  const url = `${process.env.BACKEND_URL}/${path.join("/")}${req.nextUrl.search}`;
 
   const res = await fetch(url, {
     method: req.method,

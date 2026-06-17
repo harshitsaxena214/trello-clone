@@ -2,7 +2,6 @@
 
 import { useParams, useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
-import axios from "axios";
 import { Building2, Users, LayoutDashboard } from "lucide-react";
 import {
   Card,
@@ -13,6 +12,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
 import { Skeleton } from "@/components/ui/skeleton";
+import { api } from "@/lib/axios";
 
 interface OrgPreview {
   id: string;
@@ -61,10 +61,7 @@ export default function JoinPage() {
   useEffect(() => {
     const fetchOrg = async () => {
       try {
-        const res = await axios.get(
-          `${process.env.NEXT_PUBLIC_API_URL}/org/invite/${inviteCode}`,
-          { withCredentials: true },
-        );
+        const res = await api.get(`/org/invite/${inviteCode}`);
         setOrg(res.data.data);
       } catch (err: any) {
         setError(
@@ -80,11 +77,7 @@ export default function JoinPage() {
   const handleJoin = async () => {
     setJoining(true);
     try {
-      await axios.post(
-        `${process.env.NEXT_PUBLIC_API_URL}/org/join/${inviteCode}`,
-        {},
-        { withCredentials: true },
-      );
+      await api.post(`/org/join/${inviteCode}`, {});
       router.push(`/org/${org?.slug}`);
     } catch (err: any) {
       setError(err.response?.data?.message || "Failed to join organisation");

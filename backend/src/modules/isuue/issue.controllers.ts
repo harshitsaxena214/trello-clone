@@ -5,7 +5,7 @@ import prisma from "../../lib/db";
 export const createIssue = async (req: Request, res: Response) => {
   const { orgId, boardId } = req.params as { orgId: string; boardId: string };
   const { title, description, status, assigneeId } = req.body;
-  const userId = req.user.id;
+  const userId = req.user!.id;
 
   try {
     const member = await prisma.organizationMember.findUnique({
@@ -77,7 +77,7 @@ export const createIssue = async (req: Request, res: Response) => {
 
 export const getIssues = async (req: Request, res: Response) => {
   const { orgId, boardId } = req.params as { orgId: string; boardId: string };
-  const userId = req.user.id;
+  const userId = req.user!.id;
 
   try {
     const member = await prisma.organizationMember.findUnique({
@@ -128,7 +128,7 @@ export const getIssueById = async (req: Request, res: Response) => {
     boardId: string;
     issueId: string;
   };
-  const userId = req.user.id;
+  const userId = req.user!.id;
 
   try {
     const member = await prisma.organizationMember.findUnique({
@@ -169,7 +169,7 @@ export const updateIssue = async (req: Request, res: Response) => {
     issueId: string;
   };
   const { title, description, status, assigneeId } = req.body;
-  const userId = req.user.id;
+  const userId = req.user!.id;
 
   try {
     const member = await prisma.organizationMember.findUnique({
@@ -239,7 +239,7 @@ export const updateIssuePosition = async (req: Request, res: Response) => {
     issueId: string;
   };
   const { status, position } = req.body;
-  const userId = req.user.id;
+  const userId = req.user!.id;
 
   try {
     const member = await prisma.organizationMember.findUnique({
@@ -294,7 +294,7 @@ export const deleteIssue = async (req: Request, res: Response) => {
     boardId: string;
     issueId: string;
   };
-  const userId = req.user.id;
+  const userId = req.user!.id;
   try {
     const member = await prisma.organizationMember.findUnique({
       where: {

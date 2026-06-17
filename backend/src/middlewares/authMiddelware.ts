@@ -11,7 +11,8 @@ export const authMiddleware = async (
   next: NextFunction,
 ) => {
   const token = req.headers.authorization?.split(" ")[1];
-  if (!token) return res.status(401).json({ error: "Unauthorized" });
+  if (!token)
+    return res.status(401).json({ success: false, message: "Unauthorized" });
 
   try {
     const payload = await decode({
@@ -20,24 +21,25 @@ export const authMiddleware = async (
       salt: SALT,
     });
     if (!payload?.email)
-      return res.status(401).json({ error: "Invalid session" });
+      return res
+        .status(401)
+        .json({ success: false, message: "Invalid session" });
 
-    let user = await prisma.user.findUnique({
+    const user = await prisma.user.findUnique({
       where: { email: payload.email as string },
     });
     if (!user) {
-      user = await prisma.user.create({
-        data: {
-          email: payload.email as string,
-          name: payload.name as string,
-          avatar: payload.picture as string | undefined,
-        },
-      });
+      return res
+        .status(401)
+        .json({
+          success: false,
+          message: "User not found, please sign in again",
+        });
     }
 
     req.user = { id: user.id };
     next();
   } catch {
-    return res.status(401).json({ error: "Invalid session" });
+    return res.status(401).json({ success: false, message: "Invalid session" });
   }
 };

@@ -73,7 +73,7 @@ export default function BoardPage() {
       try {
         setLoading(true);
         const slugRes = await api
-          .get(`/org/slug/${orgSlug}`, { withCredentials: true })
+          .get(`/org/slug/${orgSlug}`)
           .catch((err) => {
             if (
               err.response?.status === 404 ||

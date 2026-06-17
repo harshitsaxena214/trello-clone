@@ -2,7 +2,6 @@ import express from "express";
 
 import {
   authMiddleware,
-  verifiedMiddleware,
 } from "../../middlewares/authMiddelware";
 
 import {
@@ -22,7 +21,6 @@ import {
 const router = express.Router({ mergeParams: true });
 
 router.use(authMiddleware);
-router.use(verifiedMiddleware);
 
 router.route("/")
   .get(validate(getBoardsSchema), getBoards)

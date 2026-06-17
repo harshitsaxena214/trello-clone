@@ -5,7 +5,7 @@ export const createBoard = async (req: Request, res: Response) => {
   try {
     const { name } = req.body;
     const { orgId } = req.params as { orgId: string };
-    const userId = req.user.id;
+    const userId = req.user!.id;
 
     const member = await prisma.organizationMember.findUnique({
       where: { userId_organizationId: { userId, organizationId: orgId } },
@@ -42,7 +42,7 @@ export const createBoard = async (req: Request, res: Response) => {
 export const getBoards = async (req: Request, res: Response) => {
   try {
     const { orgId } = req.params as { orgId: string };
-    const userId = req.user.id;
+    const userId = req.user!.id;
 
     const member = await prisma.organizationMember.findUnique({
       where: { userId_organizationId: { userId, organizationId: orgId } },
@@ -88,7 +88,7 @@ export const getBoards = async (req: Request, res: Response) => {
 export const getBoardbyId = async (req: Request, res: Response) => {
   try {
     const { boardId, orgId } = req.params as { boardId: string; orgId: string };
-    const userId = req.user.id;
+    const userId = req.user!.id;
 
     const member = await prisma.organizationMember.findUnique({
       where: { userId_organizationId: { userId, organizationId: orgId } },
@@ -129,7 +129,7 @@ export const getBoardbyId = async (req: Request, res: Response) => {
 export const deleteBoard = async (req: Request, res: Response) => {
   try {
     const { boardId, orgId } = req.params as { boardId: string; orgId: string };
-    const userId = req.user.id;
+    const userId = req.user!.id;
 
     const member = await prisma.organizationMember.findUnique({
       where: { userId_organizationId: { userId, organizationId: orgId } },

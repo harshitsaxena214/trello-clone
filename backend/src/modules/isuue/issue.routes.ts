@@ -8,7 +8,7 @@ import {
   updateIssuePosition,
   deleteIssue,
 } from "./issue.controllers";
-import { authMiddleware, verifiedMiddleware } from "../../middlewares/authMiddelware";
+import { authMiddleware } from "../../middlewares/authMiddelware";
 import { validate } from "../../middlewares/validate";
 import {
   createIssueSchema,
@@ -22,7 +22,6 @@ import {
 const router = express.Router({ mergeParams: true });
 
 router.use(authMiddleware);
-router.use(verifiedMiddleware);
 
 router.route("/")
   .get(validate(getIssuesSchema), getIssues)
