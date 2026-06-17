@@ -21,6 +21,7 @@
     "dev": "bun --watch src/index.ts"
   },
   "dependencies": {
+    "@auth/core": "^0.34.3",
     "@prisma/adapter-pg": "^7.8.0",
     "@prisma/client": "^7.8.0",
     "bcrypt": "^6.0.0",

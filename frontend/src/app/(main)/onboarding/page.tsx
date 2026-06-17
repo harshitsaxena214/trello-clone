@@ -15,16 +15,11 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { useAuthGuard } from "@/hooks/useAuthGuard";
-
 export default function OnboardingPage() {
   const router = useRouter();
-  const { checking } = useAuthGuard({ requireAuth: true, requireNoOrgs: true });
 
   const [name, setName] = useState("");
   const [loading, setLoading] = useState(false);
-
-  if (checking) return null;
 
   async function handleCreateOrg() {
     if (!name.trim()) return;

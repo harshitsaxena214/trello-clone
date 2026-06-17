@@ -1,52 +1,43 @@
 import { Request, Response, NextFunction } from "express";
-import jwt from "jsonwebtoken";
-import { env } from "../lib/env";
+import { decode } from "@auth/core/jwt";
 import prisma from "../lib/db";
+import { env } from "../lib/env";
 
-declare global {
-  namespace Express {
-    interface Request {
-      user: { id: string };
-    }
-  }
-}
+const SALT = "taskflow-session-token";
 
-export const authMiddleware = (
+export const authMiddleware = async (
   req: Request,
   res: Response,
   next: NextFunction,
 ) => {
-  const token = req.cookies?.token;
-
-  if (!token) {
-    return res.status(401).json({ success: false, message: "Unauthorized" });
-  }
+  const token = req.headers.authorization?.split(" ")[1];
+  if (!token) return res.status(401).json({ error: "Unauthorized" });
 
   try {
-    const decoded = jwt.verify(token, env.JWT_SECRET) as { id: string };
-    req.user = { id: decoded.id };
-    next();
-  } catch (error: any) {
-    if (error.name === "TokenExpiredError") {
-      return res.status(401).json({
-        success: false,
-        message: "Session expired, please login again",
+    const payload = await decode({
+      token,
+      secret: env.AUTH_SECRET,
+      salt: SALT,
+    });
+    if (!payload?.email)
+      return res.status(401).json({ error: "Invalid session" });
+
+    let user = await prisma.user.findUnique({
+      where: { email: payload.email as string },
+    });
+    if (!user) {
+      user = await prisma.user.create({
+        data: {
+          email: payload.email as string,
+          name: payload.name as string,
+          avatar: payload.picture as string | undefined,
+        },
       });
     }
-    return res.status(401).json({ success: false, message: "Invalid token" });
-  }
-};
 
-export const verifiedMiddleware = async (
-  req: Request,
-  res: Response,
-  next: NextFunction,
-) => {
-  const user = await prisma.user.findUnique({ where: { id: req.user.id } });
-  if (!user?.isAccountVerified) {
-    return res
-      .status(403)
-      .json({ success: false, message: "Please verify your account" });
+    req.user = { id: user.id };
+    next();
+  } catch {
+    return res.status(401).json({ error: "Invalid session" });
   }
-  next();
 };

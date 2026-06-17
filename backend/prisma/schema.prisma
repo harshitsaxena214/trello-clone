@@ -26,24 +26,20 @@ enum IssueStatus {
 
 
 model User {
-  id           String               @id @default(cuid())
-  name         String
-  email        String               @unique
-  password     String
-  isAccountVerified  Boolean   @default(false)
-  verifyOtp          String?
-  verifyOtpExpiresAt DateTime?
-  resetOtp           String?
-  resetOtpExpiresAt  DateTime?
+  id        String   @id @default(cuid())
 
-  createdAt    DateTime             @default(now())
-  updatedAt    DateTime             @updatedAt
+  name      String
+  email     String   @unique
+
+  avatar    String?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
   organizations OrganizationMember[]
 
   assignedIssues Issue[] @relation("AssignedIssues")
-
-  createdIssues  Issue[] @relation("CreatedIssues")        
+  createdIssues  Issue[] @relation("CreatedIssues")
 }
 
 model Organization {

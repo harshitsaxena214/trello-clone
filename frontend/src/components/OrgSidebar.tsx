@@ -1,9 +1,10 @@
 "use client";
 
 import Link from "next/link";
-import { Boxes, LogOut, Plus, UserCircle2 } from "lucide-react";
+import { LogOut, Plus, UserCircle2 } from "lucide-react";
 import { useEffect, useState } from "react";
-import { usePathname, useRouter } from "next/navigation";
+import { usePathname } from "next/navigation";
+import { useSession, signOut } from "next-auth/react";
 
 import {
   Sidebar,
@@ -26,27 +27,18 @@ type OrgSummary = {
   _count: { members: number; boards: number };
 };
 
-type User = {
-  name: string;
-  email: string;
-};
-
 export function OrgSidebar() {
   const pathname = usePathname();
   const activeSlug = pathname.split("/")[2];
+  const { data: session } = useSession();
 
   const [orgs, setOrgs] = useState<OrgSummary[]>([]);
-  const [user, setUser] = useState<User | null>(null);
 
   useEffect(() => {
     async function load() {
       try {
-        const [orgsRes, userRes] = await Promise.all([
-          api.get("/org"),
-          api.get("/auth/is-authenticated"),
-        ]);
-        setOrgs(orgsRes.data.data ?? []);
-        setUser(userRes.data);
+        const res = await api.get("/org");
+        setOrgs(res.data.data ?? []);
       } catch (error) {
         console.error(error);
       }
@@ -55,12 +47,7 @@ export function OrgSidebar() {
   }, []);
 
   async function handleLogout() {
-    try {
-      await api.post("/auth/logout");
-      window.location.href = "/sign-in";
-    } catch (error) {
-      console.error(error);
-    }
+    await signOut({ callbackUrl: "/login" });
   }
 
   return (
@@ -103,7 +90,7 @@ export function OrgSidebar() {
                     <SidebarMenuButton
                       asChild
                       isActive={active}
-                      className="h-auto py-2  group-data-[collapsible=icon]:justify-center group-data-[collapsible=icon]:px-0"
+                      className="h-auto py-2 group-data-[collapsible=icon]:justify-center group-data-[collapsible=icon]:px-0"
                     >
                       <Link
                         href={`/org/${org.slug}`}
@@ -138,27 +125,14 @@ export function OrgSidebar() {
       </SidebarContent>
 
       <SidebarFooter>
-        {/* <div className="group-data-[collapsible=icon]:hidden rounded-lg border p-3 bg-muted/20 mb-2">
-          <div className="flex items-center gap-2 text-xs text-muted-foreground">
-            <Boxes className="size-3.5 shrink-0" />
-            <span className="truncate">Workspace usage</span>
-          </div>
-          <div className="mt-3 h-1.5 rounded-full bg-muted overflow-hidden">
-            <div className="h-full w-2/3 bg-foreground" />
-          </div>
-          <p className="mt-2 text-[11px] text-muted-foreground">
-            64 of 100 boards used
-          </p>
-        </div> */}
-
         <SidebarMenu>
           <SidebarMenuItem>
             <SidebarMenuButton className="h-auto py-2">
               <UserCircle2 className="size-4 shrink-0" />
               <div className="flex flex-col text-left min-w-0">
-                <span className="truncate text-sm">{user?.name}</span>
+                <span className="truncate text-sm">{session?.user?.name}</span>
                 <span className="truncate text-xs text-muted-foreground">
-                  {user?.email}
+                  {session?.user?.email}
                 </span>
               </div>
             </SidebarMenuButton>

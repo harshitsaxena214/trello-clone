@@ -1,7 +1,6 @@
 import { Request, Response } from "express";
 import prisma from "../../lib/db";
 import { env } from "../../lib/env";
-import transporter from "../../lib/nodemailer";
 import slugify from "slugify";
 
 const generateUniqueSlug = async (name: string) => {
@@ -18,22 +17,10 @@ const generateUniqueSlug = async (name: string) => {
 // POST /organisations
 export const createOrganisation = async (req: Request, res: Response) => {
   const { name } = req.body;
-  const userId = req.user.id;
+  const userId = req.user!.id;
 
   try {
     const slug = await generateUniqueSlug(name.trim());
-
-    const existingOrg = await prisma.organization.findUnique({
-      where: { slug },
-    });
-
-    if (existingOrg) {
-      return res.status(400).json({
-        success: false,
-        message:
-          "Organisation with similar name already exists, please choose a different name",
-      });
-    }
 
     const org = await prisma.organization.create({
       data: {
@@ -63,7 +50,7 @@ export const createOrganisation = async (req: Request, res: Response) => {
 
 export const getOrganisations = async (req: Request, res: Response) => {
   try {
-    const userId = req.user.id;
+    const userId = req.user!.id;
 
     const organisations = await prisma.organization.findMany({
       where: { members: { some: { userId } } },
@@ -83,13 +70,7 @@ export const getOrganisations = async (req: Request, res: Response) => {
 // GET /organisations/:id
 export const getOrganisation = async (req: Request, res: Response) => {
   const { id } = req.params as { id: string };
-  const userId = req.user.id;
-
-  if (!id) {
-    return res
-      .status(400)
-      .json({ success: false, message: "Organisation ID is required" });
-  }
+  const userId = req.user!.id;
 
   try {
     const org = await prisma.organization.findUnique({
@@ -127,13 +108,7 @@ export const getOrganisation = async (req: Request, res: Response) => {
 export const updateOrganisation = async (req: Request, res: Response) => {
   const { id } = req.params as { id: string };
   const { name } = req.body;
-  const userId = req.user.id;
-
-  if (!id) {
-    return res
-      .status(400)
-      .json({ success: false, message: "Organisation ID is required" });
-  }
+  const userId = req.user!.id;
 
   try {
     const org = await prisma.organization.findUnique({ where: { id } });
@@ -161,7 +136,6 @@ export const updateOrganisation = async (req: Request, res: Response) => {
       });
     }
 
-    // only regenerate slug if name actually changed
     const slug =
       name.trim() !== org.name
         ? await generateUniqueSlug(name.trim())
@@ -181,13 +155,7 @@ export const updateOrganisation = async (req: Request, res: Response) => {
 // DELETE /organisations/:id
 export const deleteOrganisation = async (req: Request, res: Response) => {
   const { id } = req.params as { id: string };
-  const userId = req.user.id;
-
-  if (!id) {
-    return res
-      .status(400)
-      .json({ success: false, message: "Organisation ID is required" });
-  }
+  const userId = req.user!.id;
 
   try {
     const org = await prisma.organization.findUnique({ where: { id } });
@@ -228,22 +196,9 @@ export const deleteOrganisation = async (req: Request, res: Response) => {
 // GET /organisations/:id/members
 export const getMembers = async (req: Request, res: Response) => {
   const { id } = req.params as { id: string };
-  const userId = req.user.id;
-
-  if (!id) {
-    return res
-      .status(400)
-      .json({ success: false, message: "Organisation ID is required" });
-  }
+  const userId = req.user!.id;
 
   try {
-    const org = await prisma.organization.findUnique({ where: { id } });
-    if (!org) {
-      return res
-        .status(404)
-        .json({ success: false, message: "Organisation not found" });
-    }
-
     const member = await prisma.organizationMember.findUnique({
       where: { userId_organizationId: { userId, organizationId: id } },
     });
@@ -274,23 +229,9 @@ export const removeMember = async (req: Request, res: Response) => {
     id: string;
     userId: string;
   };
-  const userId = req.user.id;
-
-  if (!id || !targetUserId) {
-    return res.status(400).json({
-      success: false,
-      message: "Organisation ID and User ID are required",
-    });
-  }
+  const userId = req.user!.id;
 
   try {
-    const org = await prisma.organization.findUnique({ where: { id } });
-    if (!org) {
-      return res
-        .status(404)
-        .json({ success: false, message: "Organisation not found" });
-    }
-
     const requester = await prisma.organizationMember.findUnique({
       where: { userId_organizationId: { userId, organizationId: id } },
     });
@@ -316,19 +257,6 @@ export const removeMember = async (req: Request, res: Response) => {
       });
     }
 
-    const targetMember = await prisma.organizationMember.findUnique({
-      where: {
-        userId_organizationId: { userId: targetUserId, organizationId: id },
-      },
-    });
-
-    if (!targetMember) {
-      return res.status(404).json({
-        success: false,
-        message: "Member not found in this organisation",
-      });
-    }
-
     await prisma.organizationMember.delete({
       where: {
         userId_organizationId: { userId: targetUserId, organizationId: id },
@@ -346,22 +274,9 @@ export const removeMember = async (req: Request, res: Response) => {
 // DELETE /organisations/:id/leave
 export const leaveOrganisation = async (req: Request, res: Response) => {
   const { id } = req.params as { id: string };
-  const userId = req.user.id;
-
-  if (!id) {
-    return res
-      .status(400)
-      .json({ success: false, message: "Organisation ID is required" });
-  }
+  const userId = req.user!.id;
 
   try {
-    const org = await prisma.organization.findUnique({ where: { id } });
-    if (!org) {
-      return res
-        .status(404)
-        .json({ success: false, message: "Organisation not found" });
-    }
-
     const member = await prisma.organizationMember.findUnique({
       where: { userId_organizationId: { userId, organizationId: id } },
     });
@@ -395,13 +310,7 @@ export const leaveOrganisation = async (req: Request, res: Response) => {
 // GET /organisations/:id/invite-link
 export const getInviteLink = async (req: Request, res: Response) => {
   const { id } = req.params as { id: string };
-  const userId = req.user.id;
-
-  if (!id) {
-    return res
-      .status(400)
-      .json({ success: false, message: "Organisation ID is required" });
-  }
+  const userId = req.user!.id;
 
   try {
     const org = await prisma.organization.findUnique({ where: { id } });
@@ -419,13 +328,6 @@ export const getInviteLink = async (req: Request, res: Response) => {
       return res.status(403).json({
         success: false,
         message: "You are not a member of this organisation",
-      });
-    }
-
-    if (member.role !== "OWNER") {
-      return res.status(403).json({
-        success: false,
-        message: "Only owners can get the invite link",
       });
     }
 
@@ -437,98 +339,10 @@ export const getInviteLink = async (req: Request, res: Response) => {
   }
 };
 
-// POST /organisations/:id/invite
-export const sendInviteLink = async (req: Request, res: Response) => {
-  const { id } = req.params as { id: string };
-  const { email } = req.body;
-  const userId = req.user.id;
-
-  if (!id) {
-    return res
-      .status(400)
-      .json({ success: false, message: "Organisation ID is required" });
-  }
-
-  try {
-    const org = await prisma.organization.findUnique({ where: { id } });
-    if (!org) {
-      return res
-        .status(404)
-        .json({ success: false, message: "Organisation not found" });
-    }
-
-    const member = await prisma.organizationMember.findUnique({
-      where: { userId_organizationId: { userId, organizationId: id } },
-    });
-
-    if (!member) {
-      return res.status(403).json({
-        success: false,
-        message: "You are not a member of this organisation",
-      });
-    }
-
-    if (member.role !== "OWNER") {
-      return res
-        .status(403)
-        .json({ success: false, message: "Only owners can send invites" });
-    }
-
-    const invitedUser = await prisma.user.findUnique({ where: { email } });
-    if (invitedUser) {
-      const alreadyMember = await prisma.organizationMember.findUnique({
-        where: {
-          userId_organizationId: { userId: invitedUser.id, organizationId: id },
-        },
-      });
-      if (alreadyMember) {
-        return res.status(400).json({
-          success: false,
-          message: "User is already a member of this organisation",
-        });
-      }
-    }
-
-    const inviteLink = `${env.CLIENT_URL}/join/${org.inviteCode}`;
-
-    await transporter.sendMail({
-      from: env.SENDER_EMAIL,
-      to: email,
-      subject: `You've been invited to ${org.name}`,
-      html: `
-        <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
-          <h2>You've been invited to join <strong>${org.name}</strong></h2>
-          <p>Click the button below to join the organisation.</p>
-          <a href="${inviteLink}"
-             style="background: #4F46E5; color: white; padding: 12px 24px;
-                    border-radius: 6px; text-decoration: none; display: inline-block;">
-            Join Organisation
-          </a>
-          <p style="color: #9CA3AF; font-size: 12px; margin-top: 16px;">
-            If you didn't expect this, ignore this email.
-          </p>
-        </div>
-      `,
-    });
-
-    return res
-      .status(200)
-      .json({ success: true, message: "Invite sent successfully" });
-  } catch (error: any) {
-    return res.status(500).json({ success: false, message: error.message });
-  }
-};
-
 // POST /organisations/join/:inviteCode
 export const joinOrganisation = async (req: Request, res: Response) => {
   const { inviteCode } = req.params as { inviteCode: string };
-  const userId = req.user.id;
-
-  if (!inviteCode) {
-    return res
-      .status(400)
-      .json({ success: false, message: "Invite code is required" });
-  }
+  const userId = req.user!.id;
 
   try {
     const org = await prisma.organization.findUnique({ where: { inviteCode } });
@@ -560,31 +374,19 @@ export const joinOrganisation = async (req: Request, res: Response) => {
     return res.status(200).json({
       success: true,
       message: "Joined organisation successfully",
-      data: { orgId: org.id },
+      data: { orgId: org.id, slug: org.slug },
     });
   } catch (error: any) {
     return res.status(500).json({ success: false, message: error.message });
   }
 };
 
+// POST /organisations/:id/reset-invite-link
 export const resetInviteLink = async (req: Request, res: Response) => {
   const { id } = req.params as { id: string };
-  const userId = req.user.id;
-
-  if (!id) {
-    return res
-      .status(400)
-      .json({ success: false, message: "Organisation ID is required" });
-  }
+  const userId = req.user!.id;
 
   try {
-    const org = await prisma.organization.findUnique({ where: { id } });
-    if (!org) {
-      return res
-        .status(404)
-        .json({ success: false, message: "Organisation not found" });
-    }
-
     const member = await prisma.organizationMember.findUnique({
       where: { userId_organizationId: { userId, organizationId: id } },
     });
@@ -622,7 +424,7 @@ export const resetInviteLink = async (req: Request, res: Response) => {
 
 export const getOrgBySlug = async (req: Request, res: Response) => {
   const { slug } = req.params as { slug: string };
-  const userId = req.user.id;
+  const userId = req.user!.id;
 
   try {
     const org = await prisma.organization.findUnique({
@@ -664,6 +466,7 @@ export const getOrgBySlug = async (req: Request, res: Response) => {
   }
 };
 
+// GET /organisations/join/:inviteCode  (preview before joining, no auth requirement needed)
 export const getOrgByInviteCode = async (req: Request, res: Response) => {
   const { inviteCode } = req.params as { inviteCode: string };
 

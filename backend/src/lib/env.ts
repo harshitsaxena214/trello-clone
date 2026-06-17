@@ -4,17 +4,12 @@ const envSchema = z.object({
   PORT: z.string().default("5000"),
   DATABASE_URL: z.string().url(),
   DIRECT_URL: z.string().url(),
-  JWT_SECRET: z.string().min(10),
   NODE_ENV: z
     .enum(["development", "production", "test"])
     .default("development"),
-  SENDER_EMAIL: z.string().email(),
-  SMTP_HOST: z.string(),
-  SMTP_PORT: z.string(),
-  SMTP_USER: z.string(),
-  SMTP_PASS: z.string(),
   CLIENT_URL: z.string().url(),
   ALLOWED_ORIGINS: z.string(),
+  AUTH_SECRET: z.string().min(32),
 });
 
 const parsedEnv = envSchema.safeParse(process.env);

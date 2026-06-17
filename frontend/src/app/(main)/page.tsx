@@ -1,6 +1,5 @@
 "use client";
 
-import { useAuthGuard } from "@/hooks/useAuthGuard";
 import { Navbar } from "@/components/landing/Navbar";
 import { Hero } from "@/components/landing/HeroSection";
 import { BoardPreview } from "@/components/landing/BoardPreview";
@@ -8,9 +7,6 @@ import { Features } from "@/components/landing/FeaturesSection";
 import { Footer } from "@/components/landing/Footer";
 
 export default function LandingPage() {
-  const { checking } = useAuthGuard({ isRoot: true });
-  if (checking) return null;
-
   return (
     <div className="min-h-screen bg-black">
       <Navbar />
