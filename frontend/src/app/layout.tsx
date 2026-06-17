@@ -30,7 +30,7 @@ export const metadata: Metadata = {
     siteName: "KanbaFlow",
     images: [
       {
-        url: "https://kanbaflow.vercel.app/og-image.png",
+        url: "https://kanbaflow.vercel.app/preview.png",
         width: 1200,
         height: 630,
         alt: "KanbaFlow",
@@ -44,7 +44,7 @@ export const metadata: Metadata = {
     card: "summary_large_image",
     title: "KanbaFlow",
     description: "Project management that moves teams forward.",
-    images: ["https://kanbaflow.vercel.app/og-image.png"],
+    images: ["https://kanbaflow.vercel.app/preview.png"],
   },
 };
 
