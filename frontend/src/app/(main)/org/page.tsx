@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import { Plus, Building2, Users, KanbanSquare } from "lucide-react";
+import { Plus, Building2, Users, KanbanSquare, LogOut } from "lucide-react";
 
 import { api } from "@/lib/axios";
 
@@ -19,6 +19,7 @@ import { toast } from "sonner";
 
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
+import { signOut } from "next-auth/react";
 
 type Organisation = {
   id: string;
@@ -78,6 +79,10 @@ export default function OrgPage() {
     }
   };
 
+  async function handleLogout() {
+    await signOut({ callbackUrl: "/" });
+  }
+
   if (loading) {
     return (
       <div className="flex h-screen items-center justify-center">
@@ -92,15 +97,21 @@ export default function OrgPage() {
         {/* Navbar */}
         <header className="border-b">
           <div className="mx-auto flex h-16 max-w-7xl items-center justify-between px-6">
-            <h1 className="text-xl font-bold">
-              Kanba
-              <span className="text-primary">Flow</span>
+            <h1 className="text-xl font-bold tracking-tight">
+              Kanba<span className="text-primary">Flow</span>
             </h1>
 
-            <Button onClick={() => setOpen(true)}>
-              <Plus className="mr-2 h-4 w-4" />
-              Create Workspace
-            </Button>
+            <div className="flex items-center gap-2">
+              <Button onClick={() => setOpen(true)}>
+                <Plus className="mr-2 h-4 w-4" />
+                Create Workspace
+              </Button>
+
+              <Button variant="outline" onClick={handleLogout}>
+                <LogOut className="mr-2 h-4 w-4" />
+                Logout
+              </Button>
+            </div>
           </div>
         </header>
 
