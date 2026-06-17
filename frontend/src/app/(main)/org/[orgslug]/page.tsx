@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
-import { Plus, Search } from "lucide-react";
+import { Plus, Search, Trash2 } from "lucide-react";
 
 import { api } from "@/lib/axios";
 import { toast } from "sonner";
@@ -186,20 +186,20 @@ export default function OrganizationPage() {
     <div className="flex h-screen w-full overflow-hidden">
       <main className="flex-1 flex flex-col min-w-0 overflow-hidden">
         {/* Topbar */}
-        <header className="h-16 shrink-0 border-b flex items-center justify-between px-6 bg-background/60 backdrop-blur-md sticky top-0 z-10">
-          <div className="flex items-center gap-3">
+        <header className="h-16 shrink-0 border-b flex items-center justify-between px-3 sm:px-6 bg-background/60 backdrop-blur-md sticky top-0 z-10">
+          <div className="flex items-center gap-2 sm:gap-3 min-w-0">
             <SidebarTrigger />
-            <div>
-              <h1 className="text-[15px] font-semibold leading-tight">
+            <div className="min-w-0">
+              <h1 className="text-[15px] font-semibold leading-tight truncate">
                 {orgName || <Skeleton className="h-4 w-32" />}
               </h1>
-              <p className="text-[11px] text-muted-foreground">
+              <p className="text-[11px] text-muted-foreground truncate">
                 {boards.length} active boards
               </p>
             </div>
           </div>
 
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-1.5 sm:gap-2 shrink-0">
             <div className="hidden md:flex items-center gap-2 h-9 px-3 rounded-md border bg-muted/40 text-xs text-muted-foreground w-64">
               <Search className="size-3.5" />
               <span>Search boards, tasks, members…</span>
@@ -211,20 +211,21 @@ export default function OrganizationPage() {
 
             {role === null ? (
               <>
-                <Skeleton className="h-9 w-28" />
+                <Skeleton className="h-9 w-9 sm:w-28" />
               </>
             ) : isOwner ? (
               <>
                 <Button size="sm" onClick={() => setShowCreateForm(true)}>
-                  <Plus className="size-3.5 mr-1.5" />
-                  New board
+                  <Plus className="size-3.5 sm:mr-1.5" />
+                  <span className="hidden sm:inline">New board</span>
                 </Button>
                 <Button
                   variant="destructive"
                   size="sm"
                   onClick={() => setDeleteDialogOpen(true)}
                 >
-                  Delete Org
+                  <span className="hidden sm:inline">Delete Org</span>
+                  <Trash2 className="size-3.5 sm:hidden" />
                 </Button>
               </>
             ) : (

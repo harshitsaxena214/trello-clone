@@ -96,20 +96,29 @@ export default function OrgPage() {
       <div className="min-h-screen bg-background">
         {/* Navbar */}
         <header className="border-b">
-          <div className="mx-auto flex h-16 max-w-7xl items-center justify-between px-6">
-            <h1 className="text-xl font-bold tracking-tight">
+          <div className="mx-auto flex h-16 max-w-7xl items-center justify-between px-3 sm:px-6">
+            <h1 className="text-lg sm:text-xl font-bold tracking-tight">
               Kanba<span className="text-primary">Flow</span>
             </h1>
 
-            <div className="flex items-center gap-2">
-              <Button onClick={() => setOpen(true)}>
-                <Plus className="mr-2 h-4 w-4" />
-                Create Workspace
+            <div className="flex items-center gap-1.5 sm:gap-2">
+              <Button
+                onClick={() => setOpen(true)}
+                size="sm"
+                className="sm:h-9 sm:px-4"
+              >
+                <Plus className="h-4 w-4 sm:mr-2" />
+                <span className="hidden sm:inline">Create Workspace</span>
               </Button>
 
-              <Button variant="outline" onClick={handleLogout}>
-                <LogOut className="mr-2 h-4 w-4" />
-                Logout
+              <Button
+                variant="outline"
+                onClick={handleLogout}
+                size="sm"
+                className="sm:h-9 sm:px-4"
+              >
+                <LogOut className="h-4 w-4 sm:mr-2" />
+                <span className="hidden sm:inline">Logout</span>
               </Button>
             </div>
           </div>
