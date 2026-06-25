@@ -22,13 +22,13 @@ export function Navbar() {
       </div>
       <nav className="flex items-center gap-3">
         <Link
-          href="/sign-in"
+          href="/login"
           className="text-sm text-zinc-400 hover:text-white transition-colors duration-200"
         >
           Sign in
         </Link>
         <Link
-          href="/sign-up"
+          href="/login"
           className="inline-flex items-center gap-1.5 rounded-md bg-white px-3.5 py-1.5 text-sm font-medium text-black hover:bg-zinc-200 transition-colors duration-200"
         >
           Get started <ArrowRight className="h-3.5 w-3.5" />
